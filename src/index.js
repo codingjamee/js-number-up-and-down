@@ -51,8 +51,8 @@ async function play() {
     cnt++;
   }
 
-  const inputValue = await readLineAsync("재시작 하시겠습니까?(yes or no) : ");
-  if (inputValue === "yes") {
+  const restart = await readLineAsync("재시작 하시겠습니까?(yes or no) : ");
+  if (restart === "yes") {
     play();
   }
 }
