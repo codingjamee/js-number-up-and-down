@@ -35,6 +35,15 @@ function printUpDown(answer, input) {
   }
 }
 
+async function restart() {
+  const restartOrNot = await readLineAsync(
+    "재시작 하시겠습니까?(yes or no) : "
+  );
+  if (restartOrNot === "yes") {
+    play();
+  }
+}
+
 async function play() {
   const answer = createRandomNumber();
   console.log(answer);
@@ -50,11 +59,7 @@ async function play() {
     printUpDown(answer, inputValue);
     cnt++;
   }
-
-  const restart = await readLineAsync("재시작 하시겠습니까?(yes or no) : ");
-  if (restart === "yes") {
-    play();
-  }
+  restart();
 }
 
 play();
