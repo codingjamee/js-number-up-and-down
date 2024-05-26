@@ -38,8 +38,8 @@ function printUpDown(answer, input) {
 async function play() {
   const answer = createRandomNumber();
   console.log(answer);
-  let cnt = 5;
-  while (cnt > 0) {
+  let cnt = 1;
+  while (cnt <= 5) {
     console.log("컴퓨터가 1~50 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.");
     const inputValue = await readLineAsync("숫자 입력: ");
     if (+inputValue === answer) {
@@ -48,7 +48,7 @@ async function play() {
       break;
     }
     printUpDown(answer, inputValue);
-    cnt--;
+    cnt++;
   }
 
   const inputValue = await readLineAsync("재시작 하시겠습니까?(yes or no) : ");
