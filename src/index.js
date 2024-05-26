@@ -15,7 +15,6 @@ function readLineAsync(query) {
       output: process.stdout,
     });
 
-    //성공하면 break하고 resolve
     rl.question(query, (input) => {
       rl.close();
       resolve(input);
@@ -26,25 +25,35 @@ function readLineAsync(query) {
 function createRandomNumber() {
   return Math.floor(Math.random() * 50 + 1);
 }
-async function play() {
-  function printUpDown(input) {
-    if (answer > input) {
-      console.log("up");
-    }
-    if (answer < input) {
-      console.log("down");
-    }
+
+function printUpDown(answer, input) {
+  if (answer > input) {
+    console.log("up");
   }
+  if (answer < input) {
+    console.log("down");
+  }
+}
+
+async function play() {
   const answer = createRandomNumber();
   console.log(answer);
-  for (let i = 5; i > 0; i--) {
+  let cnt = 5;
+  while (cnt > 0) {
     console.log("컴퓨터가 1~50 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.");
     const inputValue = await readLineAsync("숫자 입력: ");
     if (+inputValue === answer) {
       console.log("정답!");
+      console.log(cnt + " 만에 성공");
       break;
     }
-    printUpDown(inputValue);
+    printUpDown(answer, inputValue);
+    cnt--;
+  }
+
+  const inputValue = await readLineAsync("재시작 하시겠습니까?(yes or no) : ");
+  if (inputValue === "yes") {
+    play();
   }
 }
 
