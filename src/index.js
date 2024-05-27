@@ -79,8 +79,10 @@ async function play() {
       printResult("success", cnt);
       break;
     }
-    prevGuess.guessInputFn(inputValue);
-    printUpDown(answer, inputValue);
+    if (cnt !== 5) {
+      prevGuess.guessInputFn(inputValue);
+      printUpDown(answer, inputValue);
+    }
     cnt++;
   }
   //5회 초과시
