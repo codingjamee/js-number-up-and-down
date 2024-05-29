@@ -17,8 +17,9 @@ const init = (function () {
 const initGuess = (function () {
   let guess = [];
   const showInput = (guessInput) => {
-    guess.push(+guessInput);
-    console.log(guessInput);
+    const toNumberInput = parseInt(guessInput)
+    guess.push(toNumberInput);
+    console.log(toNumberInput);
     console.log("이전 추측:", guess.join(", "));
   };
   const resetGuess = () => (guess = []);
