@@ -2,7 +2,9 @@ import readline from "readline";
 
 const init = (function () {
   const createRandomNumber = () => {
-    return Math.floor(Math.random() * 50 + 1);
+    const maxNumber = 50
+    const minNumber = 1
+    return Math.floor(Math.random() * maxNumber + minNumber);
   };
   const answer = createRandomNumber();
   // console.log(answer);
