@@ -6,12 +6,12 @@ const init = (function () {
   };
   const answer = createRandomNumber();
   console.log(answer);
-  let cnt = 1;
-  const getCnt = () => cnt;
-  const addCnt = () => cnt++;
-  const resetCnt = () => (cnt = 1);
+  let count = 1;
+  const getCount = () => count;
+  const addCount = () => count++;
+  const resetCount = () => (count = 1);
   const resetAnswer = () => createRandomNumber();
-  return { getCnt, addCnt, resetCnt, answer, resetAnswer };
+  return { getCount, addCount, resetCount, answer, resetAnswer };
 })();
 
 const initGuess = (function () {
@@ -25,7 +25,7 @@ const initGuess = (function () {
   return { showInput, resetGuess };
 })();
 
-const { getCnt, addCnt, resetCnt, answer, resetAnswer } = init;
+const { getCount, addCount, resetCount, answer, resetAnswer } = init;
 const {showInput, resetGuess} = initGuess;
 
 function readLineAsync(query) {
@@ -65,7 +65,7 @@ async function askRestart() {
   );
   if (restartOrNot === "yes") {
     resetAnswer();
-    resetCnt();
+    resetCount();
     resetGuess();
     return play();
   }
@@ -76,7 +76,7 @@ async function askRestart() {
 function printResult(result) {
   if (result === "success") {
     console.log("정답!");
-    console.log(`축하합니다! ${getCnt()}번 만에 숫자를 맞추셨습니다.`);
+    console.log(`축하합니다! ${getCount()}번 만에 숫자를 맞추셨습니다.`);
     return askRestart();
   }
   if (result === "fail")
@@ -86,19 +86,19 @@ function printResult(result) {
 
 async function play() {
   console.log("컴퓨터가 1~50 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.");
-  while (getCnt() <= 5) {
+  while (getCount() <= 5) {
     const inputValue = await readLineAsync("숫자 입력: ");
     if (+inputValue === answer) {
       printResult("success");
       break;
     }
-    if (getCnt() < 5) {
+    if (getCount() < 5) {
       showInput(inputValue);
       printUpDown(inputValue);
     }
-    addCnt();
+    addCount();
   }
-  if (getCnt() > 5) printResult("fail");
+  if (getCount() > 5) printResult("fail");
 }
 
 play();
