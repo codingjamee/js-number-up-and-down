@@ -5,7 +5,7 @@ const init = (function () {
     return Math.floor(Math.random() * 50 + 1);
   };
   const answer = createRandomNumber();
-  console.log(answer);
+  // console.log(answer);
   let count = 1;
   const getCount = () => count;
   const addCount = () => count++;
