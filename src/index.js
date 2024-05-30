@@ -2,8 +2,8 @@ import readline from "readline";
 
 const init = (function () {
   const createRandomNumber = () => {
-    const maxNumber = 50
-    const minNumber = 1
+    const maxNumber = 50;
+    const minNumber = 1;
     return Math.floor(Math.random() * maxNumber + minNumber);
   };
   const answer = createRandomNumber();
@@ -19,7 +19,7 @@ const init = (function () {
 const initGuess = (function () {
   let guess = [];
   const showInput = (guessInput) => {
-    const toNumberInput = parseInt(guessInput)
+    const toNumberInput = parseInt(guessInput);
     guess.push(toNumberInput);
     console.log(toNumberInput);
     console.log("이전 추측:", guess.join(", "));
@@ -29,7 +29,7 @@ const initGuess = (function () {
 })();
 
 const { getCount, addCount, resetCount, answer, resetAnswer } = init;
-const {showInput, resetGuess} = initGuess;
+const { showInput, resetGuess } = initGuess;
 
 function readLineAsync(query) {
   return new Promise((resolve, reject) => {
@@ -75,7 +75,6 @@ async function askRestart() {
   console.log("게임을 종료합니다.");
 }
 
-
 function printResult(result) {
   if (result === "success") {
     console.log("정답!");
@@ -91,6 +90,11 @@ async function play() {
   console.log("컴퓨터가 1~50 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.");
   while (getCount() <= 5) {
     const inputValue = await readLineAsync("숫자 입력: ");
+    const typeIsNumber = !isNaN(inputValue);
+    if (!typeIsNumber) {
+      console.log("숫자가 아닙니다.");
+      continue;
+    }
     if (+inputValue === answer) {
       printResult("success");
       break;
@@ -99,7 +103,7 @@ async function play() {
       showInput(inputValue);
       printUpDown(inputValue);
     }
-    addCount();
+    if(typeIsNumber) addCount();
   }
   if (getCount() > 5) printResult("fail");
 }
