@@ -17,14 +17,14 @@ const init = (function () {
 })();
 
 const initGuess = (function () {
-  let guess = [];
+  const guess = [];
   const showInput = (guessInput) => {
     const toNumberInput = parseInt(guessInput);
     guess.push(toNumberInput);
     console.log(toNumberInput);
     console.log("이전 추측:", guess.join(", "));
   };
-  const resetGuess = () => (guess = []);
+  const resetGuess = () => (guess.length = 0);
   return { showInput, resetGuess };
 })();
 
@@ -103,7 +103,7 @@ async function play() {
       showInput(inputValue);
       printUpDown(inputValue);
     }
-    if(typeIsNumber) addCount();
+    if (typeIsNumber) addCount();
   }
   if (getCount() > 5) printResult("fail");
 }
