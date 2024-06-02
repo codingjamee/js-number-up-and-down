@@ -34,7 +34,7 @@ async function startSetting() {
   const validateBoundary = validation(minNumber, maxNumber);
   if (!validateBoundary) return askRestart();
 
-  const trialLimit = await readLineAsync(constant.askTrialLimit)
+  const trialLimit = await readLineAsync(constant.askTrialLimit);
   const validateLimit = validation(trialLimit);
   if (!validateLimit) return askRestart();
 
@@ -61,10 +61,8 @@ async function tryLoop(trial, trialLimit, answer) {
   while (trial <= trialLimit) {
     const inputValue = await readLineAsync("숫자 입력: ");
     const inputValid = validation(inputValue);
-    if (!inputValid) {
-      console.log("숫자가 아닙니다.");
-      continue;
-    }
+    if (!inputValid) continue;
+
     if (parseFloat(inputValue) === answer) {
       printResult({ result: "success", trial });
       askRestart(); //여기다 둬도 동작 할지 확인
@@ -114,8 +112,6 @@ async function askRestart() {
 }
 
 function printResult({ result, trial, answer }) {
-  //외부 의존성을 줄일 수는 없을까?
-  //여기서 외부 의존성이라는건 매개변수
   if (result === "success") {
     console.log("정답!");
     console.log(`축하합니다! ${trial}번 만에 숫자를 맞추셨습니다.`);
