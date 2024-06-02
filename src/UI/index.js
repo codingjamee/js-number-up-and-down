@@ -7,6 +7,11 @@ UI는 사용자와의 인터렉션에 관련이 있음
 import readline from "readline";
 import { gameData } from "../domain/index.js";
 
+/**
+ * 따로 constant 객체로 뺀 이유
+ * 나중에 문구를 수정할 때 묶어두면 편함
+ * 프로퍼티 명으로 문구 빠르게 유추 가능
+ */
 const constant = {
   askBoundary: "게임 시작을 위해 최소 값, 최대 값을 입력해주세요. (예: 1, 50)",
   askTrialLimit: "게임 시작을 위해 진행 가능 횟수를 입력해주세요.",
@@ -22,7 +27,7 @@ const constant = {
 
 export async function playGame() {
   let { answer, trialLimit } = await startSetting();
-  console.log({ answer, trialLimit });
+  // console.log({ answer, trialLimit });
   let trial = 1;
   trial = await tryLoop(trial, trialLimit, answer);
 }
@@ -30,7 +35,7 @@ export async function playGame() {
 async function startSetting() {
   const boundary = await readLineAsync(constant.askBoundary);
   const [minNumber, maxNumber] = boundary.split(",");
-  //input값 validation 설정
+
   const validateBoundary = validation(minNumber, maxNumber);
   if (!validateBoundary) return askRestart();
 
