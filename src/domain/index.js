@@ -1,9 +1,8 @@
 /**
- * domain으로 로직을 분리하려면
-굳이 한 파일에서 전역변수를 피할 필요가 없으므로 
-즉시실행함수는 사용하지 않아도 됨 
+ *
 domain의 하위의 모듈은 view하위의 모듈에 의존하지 말아야 한다는 의미는
 view에서 전달한 인수를 변경하면 안된다는 것으로 해석?
+함수내의 내부함수로 설정한 까닭은 
  */
 /**
 계산하고 결과를 출력하는 로직
@@ -39,7 +38,7 @@ export function gameData(min, max) {
   function showInput(guessArr, guessInput) {
     const guess = guessArr;
     const toNumberInput = parseFloat(guessInput);
-    if(typeof guess === 'array') guess.push(toNumberInput);
+    if (Array.isArray(guess)) guess.push(toNumberInput);
     console.log(toNumberInput);
     console.log("이전 추측:", guess.join(", "));
     return guess;
