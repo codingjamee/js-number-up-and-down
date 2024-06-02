@@ -6,14 +6,15 @@ const init = (function () {
     const minNumber = 1;
     return Math.floor(Math.random() * maxNumber + minNumber);
   };
-  const answer = createRandomNumber();
+  let answer = createRandomNumber();
   // console.log(answer);
   let count = 1;
   const getCount = () => count;
   const addCount = () => count++;
   const resetCount = () => (count = 1);
-  const resetAnswer = () => createRandomNumber();
-  return { getCount, addCount, resetCount, answer, resetAnswer };
+  const resetAnswer = () => (answer = createRandomNumber());
+  const getAnswer = () => answer;
+  return { getCount, addCount, resetCount, getAnswer, resetAnswer };
 })();
 
 const initGuess = (function () {
@@ -28,7 +29,7 @@ const initGuess = (function () {
   return { showInput, resetGuess };
 })();
 
-const { getCount, addCount, resetCount, answer, resetAnswer } = init;
+const { getCount, addCount, resetCount, getAnswer, resetAnswer } = init;
 const { showInput, resetGuess } = initGuess;
 
 function readLineAsync(query) {
@@ -54,10 +55,10 @@ function readLineAsync(query) {
 }
 
 function printUpDown(input) {
-  if (answer > input) {
+  if (getAnswer() > input) {
     console.log("업");
   }
-  if (answer < input) {
+  if (getAnswer() < input) {
     console.log("다운");
   }
 }
@@ -82,7 +83,7 @@ function printResult(result) {
     return askRestart();
   }
   if (result === "fail")
-    console.log(`5회 초과! 숫자를 맞추지 못했습니다. (정답: ${answer})`);
+    console.log(`5회 초과! 숫자를 맞추지 못했습니다. (정답: ${getAnswer()})`);
   return askRestart();
 }
 
@@ -95,7 +96,7 @@ async function play() {
       console.log("숫자가 아닙니다.");
       continue;
     }
-    if (+inputValue === answer) {
+    if (+inputValue === getAnswer()) {
       printResult("success");
       break;
     }
