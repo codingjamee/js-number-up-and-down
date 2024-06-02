@@ -20,7 +20,7 @@ const init = (function () {
 const initGuess = (function () {
   const guess = [];
   const showInput = (guessInput) => {
-    const toNumberInput = parseInt(guessInput);
+    const toNumberInput = parseFloat(guessInput);
     guess.push(toNumberInput);
     console.log(toNumberInput);
     console.log("이전 추측:", guess.join(", "));
@@ -96,7 +96,7 @@ async function play() {
       console.log("숫자가 아닙니다.");
       continue;
     }
-    if (+inputValue === getAnswer()) {
+    if (parseFloat(inputValue) === getAnswer()) {
       printResult("success");
       break;
     }
