@@ -74,14 +74,14 @@ async function tryLoop(trial, trialLimit, answer) {
       break;
     }
     if (trialCount <= trialLimit) {
-      guess.push(gameData().showInput(guess, inputValue));
+      guess.concat(gameData().showInput(guess, inputValue));
       gameData().printUpDown(answer, inputValue);
     }
     if (trialCount > trialLimit) {
       printResult({ result: "fail", answer: answer });
       return askRestart();
     }
-    if (typeIsNumber) trialCount++;
+    if (inputValid) trialCount++;
   }
   return trialCount;
 }
