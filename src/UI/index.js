@@ -33,15 +33,9 @@ export async function playGame() {
 }
 
 async function startSetting() {
-  const boundary = await readLineAsync(constant.askBoundary);
-  const [minNumber, maxNumber] = boundary.split(",");
-
-  const validateBoundary = validation(minNumber, maxNumber);
-  if (!validateBoundary) return askRestart();
-
-  const trialLimit = await readLineAsync(constant.askTrialLimit);
-  const validateLimit = validation(trialLimit);
-  if (!validateLimit) return askRestart();
+  const boundary = await userInputSet(constant.askBoundary);
+  const [minNumber, maxNumber] = setMinMax(boundary);
+  const trialLimit = await userInputSet(constant.askTrialLimit);
 
   const answer = gameData(minNumber, maxNumber).answer;
   console.log(
@@ -50,10 +44,26 @@ async function startSetting() {
   return { answer, trialLimit };
 }
 
+function setMinMax(boundary) {
+  const [first, second] = boundary.split(",");
+  const minNumber = Math.min(first, second);
+  const maxNumber = Math.max(first, second);
+  if (maxNumber - minNumber < 0) return askRestart();
+  return [minNumber, maxNumber];
+}
+
+async function userInputSet(askConstant) {
+  const result = await readLineAsync(askConstant);
+  const input = result.split(",");
+  const isValid = validation(...input);
+  if (!isValid) return askRestart();
+  return result;
+}
+
 function validation(...arg) {
   for (let i = 0; i < arg.length; i++) {
     if (isNaN(arg[i])) {
-      console.log("유효하지 않은 숫자입니다. 다시 입력해주세요.");
+      console.log("유효하지 않은 숫자입니다.");
       return false;
     }
   }
