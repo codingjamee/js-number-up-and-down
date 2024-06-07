@@ -25,6 +25,7 @@ const consoleContent = ({ answer, trialCount, minNumber, maxNumber }) => {
     correct: `정답! 
   축하합니다! ${trialCount}번 만에 숫자를 맞추셨습니다.`,
     fail: `5회 초과! 숫자를 맞추지 못했습니다. (정답: ${answer})`,
+    end: "게임을 종료합니다.",
   };
 };
 
@@ -153,5 +154,5 @@ async function askRestart() {
   if (restartOrNot === "yes") {
     return playGame();
   }
-  printConsole({ result: "게임을 종료합니다." });
+  printConsole({ result: consoleContent().end });
 }
