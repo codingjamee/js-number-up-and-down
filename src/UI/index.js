@@ -110,20 +110,17 @@ async function tryLoop(trialLimit, answer) {
     const inputValue = await readLineAsync("숫자 입력: ");
     const inputValid = validation(inputValue);
     if (!inputValid) continue;
+    const inputCorrect = parseFloat(inputValue) === answer;
+    const overLimit = trialCount > trialLimit;
 
-    if (parseFloat(inputValue) === answer) {
-      return { result: "success", trialCount };
-    }
-    if (trialCount <= trialLimit) {
-      const guesses = guess.concat(gameData().showInput(guess, inputValue));
-      printConsole({ result: `이전 추측: ${guesses.join(", ")}` });
-      const upDown = gameData().printUpDown(answer, inputValue);
-      printConsole({ result: upDown });
-    }
+    if (inputCorrect) ({ result: "success", trialCount });
+    if (overLimit) ({ result: "fail" });
 
-    if (trialCount > trialLimit) {
-      return { result: "fail" };
-    }
+    const guesses = guess.concat(gameData().showInput(guess, inputValue));
+    printConsole({ result: `이전 추측: ${guesses.join(", ")}` });
+    const upDown = gameData().printUpDown(answer, inputValue);
+    printConsole({ result: upDown });
+
     if (inputValid) trialCount++;
   }
   return trialCount;
