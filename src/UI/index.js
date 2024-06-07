@@ -81,7 +81,7 @@ async function userInputSet(askConstant) {
 function validation(...userInput) {
   let isValid;
   isValid = userInput.reduce(
-    (isValid, input) => (isValid && !isNaN(input)),
+    (isValid, input) => isValid && !isNaN(input),
     false
   );
   return isValid;
@@ -102,8 +102,9 @@ async function tryLoop(trialLimit, answer) {
     }
     if (trialCount <= trialLimit) {
       const guesses = guess.concat(gameData().showInput(guess, inputValue));
-      printConsole(`이전 추측: ${guesses.join(", ")}`)
-      gameData().printUpDown(answer, inputValue);
+      printConsole(`이전 추측: ${guesses.join(", ")}`);
+      const upDown = gameData().printUpDown(answer, inputValue);
+      printConsole(upDown);
     }
     if (trialCount > trialLimit) {
       printResult({ result: "fail", answer: answer });

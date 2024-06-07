@@ -28,10 +28,10 @@ export function gameData(min, max) {
 
   function printUpDown(answer, input) {
     if (answer > input) {
-      console.log("업");
+      return '업'
     }
     if (answer < input) {
-      console.log("다운");
+      return '다운'
     }
   }
 
