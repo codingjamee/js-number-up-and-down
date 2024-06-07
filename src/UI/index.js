@@ -13,7 +13,7 @@ import { gameData } from "../domain/index.js";
  * 프로퍼티 명으로 문구 빠르게 유추 가능
  */
 const constant = {
-  askBoundary: "게임 시작을 위해 최소 값, 최대 값을 입력해주세요. (예: 1, 50)",
+  askBoundary: "게임 시작을 위해 최소 값, 최대 값을 입력해주세요. (예: 1, 50) ",
   askTrialLimit: "게임 시작을 위해 진행 가능 횟수를 입력해주세요.",
   askRestart: "게임을 다시 시작하시겠습니까? (yes/no): ",
 };
@@ -26,22 +26,25 @@ const constant = {
 */
 
 export async function playGame() {
-  let { answer, trialLimit } = await startSetting();
-  // console.log({ answer, trialLimit });
-  let trial = 1;
-  trial = await tryLoop(trial, trialLimit, answer);
-}
-
-async function startSetting() {
-  const boundary = await userInputSet(constant.askBoundary);
-  const [minNumber, maxNumber] = setMinMax(boundary);
-  const trialLimit = await userInputSet(constant.askTrialLimit);
-
-  const answer = gameData(minNumber, maxNumber).answer;
+  const { answer, trialLimit, minNumber, maxNumber } = await startSetting();
   console.log(
     `컴퓨터가 ${minNumber}~${maxNumber} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`
   );
-  return { answer, trialLimit };
+  await tryLoop(trialLimit, answer);
+}
+
+async function startSetting() {
+  const { result: boundary, isValid: boundaryIsValid } = await userInputSet(
+    constant.askBoundary
+  );
+  if (!boundaryIsValid) return askRestart();
+  const [minNumber, maxNumber] = setMinMax(boundary);
+
+  const {result: trialLimit, isValid: limitIsValid} = await userInputSet(constant.askTrialLimit);
+  if (!limitIsValid) return askRestart();
+
+  const answer = gameData(minNumber, maxNumber).answer;
+  return { answer, trialLimit, minNumber, maxNumber };
 }
 
 function setMinMax(boundary) {
@@ -56,8 +59,7 @@ async function userInputSet(askConstant) {
   const result = await readLineAsync(askConstant);
   const input = result.split(",");
   const isValid = validation(...input);
-  if (!isValid) return askRestart();
-  return result;
+  return { result, isValid };
 }
 
 function validation(...arg) {
@@ -70,8 +72,8 @@ function validation(...arg) {
   return true;
 }
 
-async function tryLoop(trial, trialLimit, answer) {
-  let trialCount = trial;
+async function tryLoop(trialLimit, answer) {
+  let trialCount = 1;
   const guess = [];
   while (trial <= trialLimit) {
     const inputValue = await readLineAsync("숫자 입력: ");
@@ -79,7 +81,7 @@ async function tryLoop(trial, trialLimit, answer) {
     if (!inputValid) continue;
 
     if (parseFloat(inputValue) === answer) {
-      printResult({ result: "success", trial });
+      printResult({ result: "success", trialCount });
       askRestart(); //여기다 둬도 동작 할지 확인
       break;
     }
