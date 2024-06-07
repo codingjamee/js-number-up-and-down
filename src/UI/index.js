@@ -18,8 +18,14 @@ const constant = {
   askRestart: "게임을 다시 시작하시겠습니까? (yes/no): ",
 };
 
-const consoleContent = {
-  "": "",
+const consoleContent = ({ answer, trialCount, minNumber, maxNumber }) => {
+  return {
+    notValid: "유효하지 않은 입력입니다.",
+    guessNumber: `컴퓨터가 ${minNumber}~${maxNumber} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`,
+    correct: `정답! 
+  축하합니다! ${trialCount}번 만에 숫자를 맞추셨습니다.`,
+    fail: `5회 초과! 숫자를 맞추지 못했습니다. (정답: ${answer})`,
+  };
 };
 
 /**
@@ -33,11 +39,11 @@ export async function playGame() {
   const { answer, trialLimit, minNumber, maxNumber, settingIsNotValid } =
     await startSetting();
   if (settingIsNotValid) {
-    printConsole({ result: "유효하지 않은 입력입니다." });
+    printConsole({ result: consoleContent().notValid });
     return askRestart();
   }
   printConsole({
-    result: `컴퓨터가 ${minNumber}~${maxNumber} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`,
+    result: consoleContent({ minNumber, maxNumber }).guessNumber,
   });
   const { result, trialCount } = await tryLoop(trialLimit, answer);
   printConsole({ result, trialCount, answer });
@@ -46,12 +52,11 @@ export async function playGame() {
 
 function printConsole({ result, trialCount, answer }) {
   if (result === "success") {
-    console.log("정답!");
-    console.log(`축하합니다! ${trialCount}번 만에 숫자를 맞추셨습니다.`);
+    printConsole({ result: consoleContent({ trialCount }).correct });
     return;
   }
   if (result === "fail") {
-    console.log(`5회 초과! 숫자를 맞추지 못했습니다. (정답: ${answer})`);
+    printConsole({ result: consoleContent({ answer }).fail });
     return;
   }
   console.log(result);
@@ -151,5 +156,5 @@ async function askRestart() {
   if (restartOrNot === "yes") {
     return playGame();
   }
-  printConsole({result: '게임을 종료합니다.'})
+  printConsole({ result: "게임을 종료합니다." });
 }
