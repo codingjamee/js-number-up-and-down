@@ -97,11 +97,12 @@ async function tryLoop(trialLimit, answer) {
 
     if (parseFloat(inputValue) === answer) {
       printResult({ result: "success", trialCount });
-      askRestart(); //여기다 둬도 동작 할지 확인
+      askRestart();
       break;
     }
     if (trialCount <= trialLimit) {
-      guess.concat(gameData().showInput(guess, inputValue));
+      const guesses = guess.concat(gameData().showInput(guess, inputValue));
+      printConsole(`이전 추측: ${guesses.join(", ")}`)
       gameData().printUpDown(answer, inputValue);
     }
     if (trialCount > trialLimit) {

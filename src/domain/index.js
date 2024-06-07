@@ -39,8 +39,6 @@ export function gameData(min, max) {
     const guess = guessArr;
     const toNumberInput = parseFloat(guessInput);
     if (Array.isArray(guess)) guess.push(toNumberInput);
-    console.log(toNumberInput);
-    console.log("이전 추측:", guess.join(", "));
     return guess;
   }
 }
