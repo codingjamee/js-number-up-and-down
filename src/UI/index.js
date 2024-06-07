@@ -151,5 +151,5 @@ async function askRestart() {
   if (restartOrNot === "yes") {
     return playGame();
   }
-  console.log("게임을 종료합니다.");
+  printConsole({result: '게임을 종료합니다.'})
 }
