@@ -78,14 +78,13 @@ async function userInputSet(askConstant) {
   return { result, isValid };
 }
 
-function validation(...arg) {
+function validation(...userInput) {
   let isValid;
-  for (let i = 0; i < arg.length; i++) {
-    if (isNaN(arg[i])) {
-      return (isValid = false);
-    }
-  }
-  return (isValid = true);
+  isValid = userInput.reduce(
+    (isValid, input) => (isValid && !isNaN(input)),
+    false
+  );
+  return isValid;
 }
 
 async function tryLoop(trialLimit, answer) {
