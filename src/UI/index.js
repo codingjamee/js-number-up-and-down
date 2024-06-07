@@ -18,6 +18,10 @@ const constant = {
   askRestart: "게임을 다시 시작하시겠습니까? (yes/no): ",
 };
 
+const consoleContent = {
+  "": "",
+};
+
 /**
 사용자 입력을 받는다
 최소 최대값 입력을 받는다 
@@ -26,32 +30,44 @@ const constant = {
 */
 
 export async function playGame() {
-  const { answer, trialLimit, minNumber, maxNumber } = await startSetting();
-  console.log(
+  const { answer, trialLimit, minNumber, maxNumber, settingIsNotValid } =
+    await startSetting();
+  if (settingIsNotValid) {
+    printConsole("유효하지 않은 입력입니다.");
+    return askRestart();
+  }
+  printConsole(
     `컴퓨터가 ${minNumber}~${maxNumber} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`
   );
   await tryLoop(trialLimit, answer);
+}
+
+function printConsole(content) {
+  console.log(content);
 }
 
 async function startSetting() {
   const { result: boundary, isValid: boundaryIsValid } = await userInputSet(
     constant.askBoundary
   );
-  if (!boundaryIsValid) return askRestart();
   const [minNumber, maxNumber] = setMinMax(boundary);
-
-  const {result: trialLimit, isValid: limitIsValid} = await userInputSet(constant.askTrialLimit);
-  if (!limitIsValid) return askRestart();
-
+  const { result: trialLimit, isValid: limitIsValid } = await userInputSet(
+    constant.askTrialLimit
+  );
   const answer = gameData(minNumber, maxNumber).answer;
-  return { answer, trialLimit, minNumber, maxNumber };
+  return {
+    answer,
+    trialLimit,
+    minNumber,
+    maxNumber,
+    settingIsNotValid: !boundaryIsValid || !limitIsValid,
+  };
 }
 
 function setMinMax(boundary) {
   const [first, second] = boundary.split(",");
   const minNumber = Math.min(first, second);
   const maxNumber = Math.max(first, second);
-  if (maxNumber - minNumber < 0) return askRestart();
   return [minNumber, maxNumber];
 }
 
@@ -63,13 +79,13 @@ async function userInputSet(askConstant) {
 }
 
 function validation(...arg) {
+  let isValid;
   for (let i = 0; i < arg.length; i++) {
     if (isNaN(arg[i])) {
-      console.log("유효하지 않은 숫자입니다.");
-      return false;
+      return (isValid = false);
     }
   }
-  return true;
+  return (isValid = true);
 }
 
 async function tryLoop(trialLimit, answer) {
