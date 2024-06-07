@@ -33,17 +33,28 @@ export async function playGame() {
   const { answer, trialLimit, minNumber, maxNumber, settingIsNotValid } =
     await startSetting();
   if (settingIsNotValid) {
-    printConsole("유효하지 않은 입력입니다.");
+    printConsole({ result: "유효하지 않은 입력입니다." });
     return askRestart();
   }
-  printConsole(
-    `컴퓨터가 ${minNumber}~${maxNumber} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`
-  );
-  await tryLoop(trialLimit, answer);
+  printConsole({
+    result: `컴퓨터가 ${minNumber}~${maxNumber} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`,
+  });
+  const { result, trialCount } = await tryLoop(trialLimit, answer);
+  printConsole({ result, trialCount, answer });
+  askRestart();
 }
 
-function printConsole(content) {
-  console.log(content);
+function printConsole({ result, trialCount, answer }) {
+  if (result === "success") {
+    console.log("정답!");
+    console.log(`축하합니다! ${trialCount}번 만에 숫자를 맞추셨습니다.`);
+    return;
+  }
+  if (result === "fail") {
+    console.log(`5회 초과! 숫자를 맞추지 못했습니다. (정답: ${answer})`);
+    return;
+  }
+  console.log(result);
 }
 
 async function startSetting() {
@@ -96,19 +107,17 @@ async function tryLoop(trialLimit, answer) {
     if (!inputValid) continue;
 
     if (parseFloat(inputValue) === answer) {
-      printResult({ result: "success", trialCount });
-      askRestart();
-      break;
+      return { result: "success", trialCount };
     }
     if (trialCount <= trialLimit) {
       const guesses = guess.concat(gameData().showInput(guess, inputValue));
-      printConsole(`이전 추측: ${guesses.join(", ")}`);
+      printConsole({ result: `이전 추측: ${guesses.join(", ")}` });
       const upDown = gameData().printUpDown(answer, inputValue);
-      printConsole(upDown);
+      printConsole({ result: upDown });
     }
+
     if (trialCount > trialLimit) {
-      printResult({ result: "fail", answer: answer });
-      return askRestart();
+      return { result: "fail" };
     }
     if (inputValid) trialCount++;
   }
@@ -143,15 +152,4 @@ async function askRestart() {
     return playGame();
   }
   console.log("게임을 종료합니다.");
-}
-
-function printResult({ result, trial, answer }) {
-  if (result === "success") {
-    console.log("정답!");
-    console.log(`축하합니다! ${trial}번 만에 숫자를 맞추셨습니다.`);
-    return;
-  }
-  if (result === "fail")
-    console.log(`5회 초과! 숫자를 맞추지 못했습니다. (정답: ${answer})`);
-  return;
 }
