@@ -70,7 +70,7 @@ async function initializeGameSetting() {
   const boundary = await promptValidateGameInfo({
     askConstant: constant.askBoundary,
     mutatePromptFn: (result) => result.split(","),
-    validateFn: validation,
+    validateFn: numberValidation,
     onInValid: (notValidType) => {
       displayMessage({
         result: getGameStatusMessages({ notValidType }).notValid,
@@ -81,7 +81,7 @@ async function initializeGameSetting() {
   const [minNumber, maxNumber] = parseBoundary(boundary);
   const trialLimit = await promptValidateGameInfo({
     askConstant: constant.askTrialLimit,
-    validateFn: validation,
+    validateFn: numberValidation,
     onInValid: (notValidType) => {
       displayMessage({
         result: getGameStatusMessages({ notValidType }).notValid,
@@ -119,7 +119,7 @@ async function promptValidateGameInfo({
   onInValid(result);
 }
 
-function validation(...userInput) {
+function numberValidation(...userInput) {
   let isValid;
   isValid = userInput.reduce(
     (isValid, input) => isValid && !isNaN(input),
@@ -133,7 +133,7 @@ async function tryLoop(trialLimit, answer) {
   const guess = [];
   while (trial <= trialLimit) {
     const inputValue = await readLineAsync("숫자 입력: ");
-    const inputValid = validation(inputValue);
+    const inputValid = numberValidation(inputValue);
     if (!inputValid) continue;
 
     const inputCorrect = parseFloat(inputValue) === answer;
