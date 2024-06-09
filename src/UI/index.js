@@ -18,7 +18,7 @@ const constant = {
   askRestart: "게임을 다시 시작하시겠습니까? (yes/no): ",
 };
 
-const consoleContent = ({ answer, trialCount, minNumber, maxNumber }) => {
+const getGameStatusMessages = ({ answer, trialCount, minNumber, maxNumber }) => {
   return {
     notValid: "유효하지 않은 입력입니다.",
     guessNumber: `컴퓨터가 ${minNumber}~${maxNumber} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`,
@@ -40,24 +40,24 @@ export async function playGame() {
   const { answer, trialLimit, minNumber, maxNumber, settingIsNotValid } =
     await startSetting();
   if (settingIsNotValid) {
-    printConsole({ result: consoleContent().notValid });
+    displayMessage({ result: getGameStatusMessages().notValid });
     return askRestart();
   }
-  printConsole({
-    result: consoleContent({ minNumber, maxNumber }).guessNumber,
+  displayMessage({
+    result: getGameStatusMessages({ minNumber, maxNumber }).guessNumber,
   });
   const { result, trialCount } = await tryLoop(trialLimit, answer);
-  printConsole({ result, trialCount, answer });
+  displayMessage({ result, trialCount, answer });
   askRestart();
 }
 
-function printConsole({ result, trialCount, answer }) {
+function displayMessage({ result, trialCount, answer }) {
   if (result === "success") {
-    printConsole({ result: consoleContent({ trialCount }).correct });
+    console.log(getGameStatusMessages({ trialCount }).correct);
     return;
   }
   if (result === "fail") {
-    printConsole({ result: consoleContent({ answer }).fail });
+    console.log(getGameStatusMessages({ answer }).fail);
     return;
   }
   console.log(result);
@@ -111,6 +111,7 @@ async function tryLoop(trialLimit, answer) {
     const inputValue = await readLineAsync("숫자 입력: ");
     const inputValid = validation(inputValue);
     if (!inputValid) continue;
+
     const inputCorrect = parseFloat(inputValue) === answer;
     const overLimit = trialCount > trialLimit;
 
@@ -118,9 +119,9 @@ async function tryLoop(trialLimit, answer) {
     if (overLimit) ({ result: "fail" });
 
     const guesses = guess.concat(gameData().showInput(guess, inputValue));
-    printConsole({ result: `이전 추측: ${guesses.join(", ")}` });
+    displayMessage({ result: `이전 추측: ${guesses.join(", ")}` });
     const upDown = gameData().printUpDown(answer, inputValue);
-    printConsole({ result: upDown });
+    displayMessage({ result: upDown });
 
     if (inputValid) trialCount++;
   }
@@ -154,5 +155,5 @@ async function askRestart() {
   if (restartOrNot === "yes") {
     return playGame();
   }
-  printConsole({ result: consoleContent().end });
+  displayMessage({ result: getGameStatusMessages().end });
 }
