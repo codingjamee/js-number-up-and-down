@@ -52,7 +52,7 @@ export async function playGame() {
   });
   const { result, trialCount } = await executeGuessingGame(trialLimit, answer);
   displayMessage({ result, trialCount, answer });
-  askRestart({
+  askAndRestart({
     restartFn: playGame,
     restartMessageFn: () => displayMessage({ result: constant.restart }),
   });
@@ -79,7 +79,7 @@ async function initializeGameSetting() {
       displayMessage({
         result: getGameStatusMessages({ notValidType }).notValid,
       });
-      askRestart({
+      askAndRestart({
         restartFn: playGame,
       });
     },
@@ -92,7 +92,7 @@ async function initializeGameSetting() {
       displayMessage({
         result: getGameStatusMessages({ notValidType }).notValid,
       });
-      askRestart({
+      askAndRestart({
         restartFn: playGame,
       });
     },
@@ -189,7 +189,7 @@ function readLineAsync(query) {
   });
 }
 
-async function askRestart({ restartFn, restartMessageFn }) {
+async function askAndRestart({ restartFn, restartMessageFn }) {
   const restartOrNot = await promptUser(constant.askRestart);
   if (restartOrNot === "yes") {
     return restartFn();
