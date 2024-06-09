@@ -49,7 +49,7 @@ export async function playGame() {
   displayMessage({
     result: getGameStatusMessages({ minNumber, maxNumber }).guessNumber,
   });
-  const { result, trialCount } = await tryLoop(trialLimit, answer);
+  const { result, trialCount } = await executeGuessingGame(trialLimit, answer);
   displayMessage({ result, trialCount, answer });
   askRestart();
 }
@@ -67,8 +67,8 @@ function displayMessage({ result, trialCount, answer }) {
 }
 
 async function initializeGameSetting() {
-  const boundary = await promptValidateGameInfo({
-    askConstant: constant.askBoundary,
+  const boundary = await promptValidateUserInput({
+    askCotent: constant.askBoundary,
     mutatePromptFn: (result) => result.split(","),
     validateFn: numberValidation,
     onInValid: (notValidType) => {
@@ -79,8 +79,8 @@ async function initializeGameSetting() {
     },
   });
   const [minNumber, maxNumber] = parseBoundary(boundary);
-  const trialLimit = await promptValidateGameInfo({
-    askConstant: constant.askTrialLimit,
+  const trialLimit = await promptValidateUserInput({
+    askCotent: constant.askTrialLimit,
     validateFn: numberValidation,
     onInValid: (notValidType) => {
       displayMessage({
@@ -105,18 +105,22 @@ function parseBoundary(boundary) {
   return [minNumber, maxNumber];
 }
 
-async function promptValidateGameInfo({
-  askConstant,
+async function promptValidateUserInput({
+  askCotent,
   mutatePromptFn = undefined,
   validateFn,
   onInValid,
 }) {
-  let result = await readLineAsync(askConstant);
+  let result = await promptUser(askCotent);
   if (mutatePromptFn) {
     result = mutatePromptFn(result);
   }
   if (validateFn(result)) return result;
   onInValid(result);
+}
+
+async function promptUser(askCotent) {
+  return await readLineAsync(askCotent);
 }
 
 function numberValidation(...userInput) {
@@ -128,28 +132,40 @@ function numberValidation(...userInput) {
   return isValid;
 }
 
-async function tryLoop(trialLimit, answer) {
+async function executeGuessingGame(trialLimit, answer) {
   let trialCount = 1;
-  const guess = [];
+  const userTrialArray = [];
   while (trial <= trialLimit) {
-    const inputValue = await readLineAsync("숫자 입력: ");
-    const inputValid = numberValidation(inputValue);
-    if (!inputValid) continue;
+    const inputValue = await promptValidateUserInput({
+      askCotent: "숫자 입력: ",
+      validateFn: numberValidation,
+      onInValid: () => {
+        displayMessage({
+          result: getGameStatusMessages({ notValidType }).notValid,
+        });
+        return null;
+      },
+    });
 
-    const inputCorrect = parseFloat(inputValue) === answer;
-    const overLimit = trialCount > trialLimit;
+    if (isAnswerCorrect(inputValue, answer)) {
+      return { result: "success", trialCount };
+    }
+    if (trialCount > trialLimit) ({ result: "fail" });
 
-    if (inputCorrect) ({ result: "success", trialCount });
-    if (overLimit) ({ result: "fail" });
-
-    const guesses = guess.concat(gameData().showInput(guess, inputValue));
-    displayMessage({ result: `이전 추측: ${guesses.join(", ")}` });
+    const userAttempts = userTrialArray.concat(
+      gameData().showInput(userTrialArray, inputValue)
+    );
+    displayMessage({ result: `이전 추측: ${userAttempts.join(", ")}` });
     const upDown = gameData().printUpDown(answer, inputValue);
     displayMessage({ result: upDown });
 
-    if (inputValid) trialCount++;
+    trialCount++;
   }
   return trialCount;
+}
+
+function isAnswerCorrect(input, answer) {
+  return parseFloat(input) === answer;
 }
 
 function readLineAsync(query) {
@@ -175,7 +191,7 @@ function readLineAsync(query) {
 }
 
 async function askRestart() {
-  const restartOrNot = await readLineAsync(constant.askRestart);
+  const restartOrNot = await promptUser(constant.askRestart);
   if (restartOrNot === "yes") {
     return playGame();
   }
