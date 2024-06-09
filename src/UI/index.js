@@ -106,13 +106,6 @@ async function initializeGameSetting() {
   };
 }
 
-function parseBoundary(boundary) {
-  const [first, second] = boundary.split(",");
-  const minNumber = Math.min(first, second);
-  const maxNumber = Math.max(first, second);
-  return [minNumber, maxNumber];
-}
-
 async function promptValidateUserInput({
   askCotent,
   mutatePromptFn = undefined,
