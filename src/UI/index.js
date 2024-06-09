@@ -54,7 +54,7 @@ export async function playGame() {
   displayMessage({ result, trialCount, answer });
   askRestart({
     restartFn: playGame,
-    messageFn: () => displayMessage({ result: constant.restart }),
+    restartMessageFn: () => displayMessage({ result: constant.restart }),
   });
 }
 
@@ -189,10 +189,10 @@ function readLineAsync(query) {
   });
 }
 
-async function askRestart({ restartFn, messageFn }) {
+async function askRestart({ restartFn, restartMessageFn }) {
   const restartOrNot = await promptUser(constant.askRestart);
   if (restartOrNot === "yes") {
     return restartFn();
   }
-  if (messageFn) messageFn();
+  if (restartMessageFn) restartMessageFn();
 }
