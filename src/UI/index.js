@@ -16,6 +16,7 @@ const constant = {
   askBoundary: "게임 시작을 위해 최소 값, 최대 값을 입력해주세요. (예: 1, 50) ",
   askTrialLimit: "게임 시작을 위해 진행 가능 횟수를 입력해주세요.",
   askRestart: "게임을 다시 시작하시겠습니까? (yes/no): ",
+  restart: "게임을 다시 시작합니다.",
 };
 
 const getGameStatusMessages = ({
@@ -51,7 +52,10 @@ export async function playGame() {
   });
   const { result, trialCount } = await executeGuessingGame(trialLimit, answer);
   displayMessage({ result, trialCount, answer });
-  askRestart();
+  askRestart({
+    restartFn: playGame,
+    messageFn: () => displayMessage({ result: constant.restart }),
+  });
 }
 
 function displayMessage({ result, trialCount, answer }) {
@@ -75,7 +79,9 @@ async function initializeGameSetting() {
       displayMessage({
         result: getGameStatusMessages({ notValidType }).notValid,
       });
-      askRestart();
+      askRestart({
+        restartFn: playGame,
+      });
     },
   });
   const [minNumber, maxNumber] = parseBoundary(boundary);
@@ -86,7 +92,9 @@ async function initializeGameSetting() {
       displayMessage({
         result: getGameStatusMessages({ notValidType }).notValid,
       });
-      askRestart();
+      askRestart({
+        restartFn: playGame,
+      });
     },
   });
   const answer = gameData(minNumber, maxNumber).answer;
@@ -122,7 +130,6 @@ async function promptValidateUserInput({
 async function promptUser(askCotent) {
   return await readLineAsync(askCotent);
 }
-
 
 async function executeGuessingGame(trialLimit, answer) {
   let trialCount = 1;
@@ -182,10 +189,10 @@ function readLineAsync(query) {
   });
 }
 
-async function askRestart() {
+async function askRestart({ restartFn, messageFn }) {
   const restartOrNot = await promptUser(constant.askRestart);
   if (restartOrNot === "yes") {
-    return playGame();
+    return restartFn();
   }
-  displayMessage({ result: getGameStatusMessages().end });
+  if (messageFn) messageFn();
 }
