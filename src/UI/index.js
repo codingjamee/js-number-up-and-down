@@ -150,7 +150,7 @@ async function executeGuessingGame(trialLimit, answer) {
     if (isAnswerCorrect(inputValue, answer)) {
       return { result: "success", trialCount };
     }
-    if (trialCount > trialLimit) ({ result: "fail" });
+    if (trialCount > trialLimit) return { result: "fail" };
 
     const userAttempts = userTrialArray.concat(
       gameData().showInput(userTrialArray, inputValue)
