@@ -20,6 +20,7 @@ export function gameData(min, max) {
     showInput,
     numberValidation,
     parseBoundary,
+    isAnswerCorrect,
   };
 
   function createRandomNumber(min, max) {
@@ -55,5 +56,9 @@ export function gameData(min, max) {
     const minNumber = Math.min(first, second);
     const maxNumber = Math.max(first, second);
     return [minNumber, maxNumber];
+  }
+
+  function isAnswerCorrect(input, answer) {
+    return input === answer;
   }
 }
