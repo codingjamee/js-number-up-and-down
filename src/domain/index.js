@@ -18,6 +18,7 @@ export function gameData(min, max) {
     answer: createRandomNumber(min, max),
     printUpDown,
     showInput,
+    numberValidation
   };
 
   function createRandomNumber(min, max) {
@@ -41,4 +42,14 @@ export function gameData(min, max) {
     if (Array.isArray(guess)) guess.push(toNumberInput);
     return guess;
   }
+
+  function numberValidation(...userInput) {
+    let isValid;
+    isValid = userInput.reduce(
+      (isValid, input) => isValid && !isNaN(input),
+      false
+    );
+    return isValid;
+  }
+  
 }

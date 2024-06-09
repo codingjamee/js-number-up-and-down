@@ -70,7 +70,7 @@ async function initializeGameSetting() {
   const boundary = await promptValidateUserInput({
     askCotent: constant.askBoundary,
     mutatePromptFn: (result) => result.split(","),
-    validateFn: numberValidation,
+    validateFn: gameData().numberValidation,
     onInValid: (notValidType) => {
       displayMessage({
         result: getGameStatusMessages({ notValidType }).notValid,
@@ -81,7 +81,7 @@ async function initializeGameSetting() {
   const [minNumber, maxNumber] = parseBoundary(boundary);
   const trialLimit = await promptValidateUserInput({
     askCotent: constant.askTrialLimit,
-    validateFn: numberValidation,
+    validateFn: gameData().numberValidation,
     onInValid: (notValidType) => {
       displayMessage({
         result: getGameStatusMessages({ notValidType }).notValid,
@@ -123,14 +123,6 @@ async function promptUser(askCotent) {
   return await readLineAsync(askCotent);
 }
 
-function numberValidation(...userInput) {
-  let isValid;
-  isValid = userInput.reduce(
-    (isValid, input) => isValid && !isNaN(input),
-    false
-  );
-  return isValid;
-}
 
 async function executeGuessingGame(trialLimit, answer) {
   let trialCount = 1;
@@ -138,7 +130,7 @@ async function executeGuessingGame(trialLimit, answer) {
   while (trial <= trialLimit) {
     const inputValue = await promptValidateUserInput({
       askCotent: "숫자 입력: ",
-      validateFn: numberValidation,
+      validateFn: gameData().numberValidation,
       onInValid: () => {
         displayMessage({
           result: getGameStatusMessages({ notValidType }).notValid,
