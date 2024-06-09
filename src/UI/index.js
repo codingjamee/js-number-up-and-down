@@ -146,7 +146,7 @@ async function executeGuessingGame(trialLimit, answer) {
       },
     });
 
-    if (isAnswerCorrect(inputValue, answer)) {
+    if (isAnswerCorrect(parseFloat(inputValue), answer)) {
       return { result: "success", trialCount };
     }
     if (trialCount > trialLimit) return { result: "fail" };
@@ -164,7 +164,7 @@ async function executeGuessingGame(trialLimit, answer) {
 }
 
 function isAnswerCorrect(input, answer) {
-  return parseFloat(input) === answer;
+  return input === answer;
 }
 
 function readLineAsync(query) {
