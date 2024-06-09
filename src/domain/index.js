@@ -18,7 +18,7 @@ export function gameData(min, max) {
     answer: createRandomNumber(min, max),
     printUpDown,
     showInput,
-    numberValidation
+    numberValidation,
   };
 
   function createRandomNumber(min, max) {
@@ -29,10 +29,10 @@ export function gameData(min, max) {
 
   function printUpDown(answer, input) {
     if (answer > input) {
-      return '업'
+      return "업";
     }
     if (answer < input) {
-      return '다운'
+      return "다운";
     }
   }
 
@@ -45,11 +45,7 @@ export function gameData(min, max) {
 
   function numberValidation(...userInput) {
     let isValid;
-    isValid = userInput.reduce(
-      (isValid, input) => isValid && !isNaN(input),
-      false
-    );
+    isValid = userInput.every((input) => !isNaN(input));
     return isValid;
   }
-  
 }
