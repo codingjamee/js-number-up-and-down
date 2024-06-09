@@ -18,9 +18,15 @@ const constant = {
   askRestart: "게임을 다시 시작하시겠습니까? (yes/no): ",
 };
 
-const getGameStatusMessages = ({ answer, trialCount, minNumber, maxNumber }) => {
+const getGameStatusMessages = ({
+  notValidType,
+  answer,
+  trialCount,
+  minNumber,
+  maxNumber,
+}) => {
   return {
-    notValid: "유효하지 않은 입력입니다.",
+    notValid: `입력하신 ${notValidType}이 유효하지 않습니다.`,
     guessNumber: `컴퓨터가 ${minNumber}~${maxNumber} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`,
     correct: `정답! 
   축하합니다! ${trialCount}번 만에 숫자를 맞추셨습니다.`,
@@ -37,12 +43,9 @@ const getGameStatusMessages = ({ answer, trialCount, minNumber, maxNumber }) => 
 */
 
 export async function playGame() {
-  const { answer, trialLimit, minNumber, maxNumber, settingIsNotValid } =
-    await startSetting();
-  if (settingIsNotValid) {
-    displayMessage({ result: getGameStatusMessages().notValid });
-    return askRestart();
-  }
+  const { answer, trialLimit, minNumber, maxNumber } =
+    await initializeGameSetting();
+
   displayMessage({
     result: getGameStatusMessages({ minNumber, maxNumber }).guessNumber,
   });
@@ -63,36 +66,57 @@ function displayMessage({ result, trialCount, answer }) {
   console.log(result);
 }
 
-async function startSetting() {
-  const { result: boundary, isValid: boundaryIsValid } = await userInputSet(
-    constant.askBoundary
-  );
-  const [minNumber, maxNumber] = setMinMax(boundary);
-  const { result: trialLimit, isValid: limitIsValid } = await userInputSet(
-    constant.askTrialLimit
-  );
+async function initializeGameSetting() {
+  const boundary = await promptValidateGameInfo({
+    askConstant: constant.askBoundary,
+    mutatePromptFn: (result) => result.split(","),
+    validateFn: validation,
+    onInValid: (notValidType) => {
+      displayMessage({
+        result: getGameStatusMessages({ notValidType }).notValid,
+      });
+      askRestart();
+    },
+  });
+  const [minNumber, maxNumber] = parseBoundary(boundary);
+  const trialLimit = await promptValidateGameInfo({
+    askConstant: constant.askTrialLimit,
+    validateFn: validation,
+    onInValid: (notValidType) => {
+      displayMessage({
+        result: getGameStatusMessages({ notValidType }).notValid,
+      });
+      askRestart();
+    },
+  });
   const answer = gameData(minNumber, maxNumber).answer;
   return {
     answer,
     trialLimit,
     minNumber,
     maxNumber,
-    settingIsNotValid: !boundaryIsValid || !limitIsValid,
   };
 }
 
-function setMinMax(boundary) {
+function parseBoundary(boundary) {
   const [first, second] = boundary.split(",");
   const minNumber = Math.min(first, second);
   const maxNumber = Math.max(first, second);
   return [minNumber, maxNumber];
 }
 
-async function userInputSet(askConstant) {
-  const result = await readLineAsync(askConstant);
-  const input = result.split(",");
-  const isValid = validation(...input);
-  return { result, isValid };
+async function promptValidateGameInfo({
+  askConstant,
+  mutatePromptFn = undefined,
+  validateFn,
+  onInValid,
+}) {
+  let result = await readLineAsync(askConstant);
+  if (mutatePromptFn) {
+    result = mutatePromptFn(result);
+  }
+  if (validateFn(result)) return result;
+  onInValid(result);
 }
 
 function validation(...userInput) {
