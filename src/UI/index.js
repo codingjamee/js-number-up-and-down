@@ -84,7 +84,7 @@ async function initializeGameSetting() {
       });
     },
   });
-  const [minNumber, maxNumber] = parseBoundary(boundary);
+  const [minNumber, maxNumber] = gameData().parseBoundary(boundary);
   const trialLimit = await promptValidateUserInput({
     askCotent: constant.askTrialLimit,
     validateFn: gameData().numberValidation,
@@ -138,7 +138,7 @@ async function executeGuessingGame(trialLimit, answer) {
     const inputValue = await promptValidateUserInput({
       askCotent: "숫자 입력: ",
       validateFn: gameData().numberValidation,
-      onInValid: () => {
+      onInValid: (notValidType) => {
         displayMessage({
           result: getGameStatusMessages({ notValidType }).notValid,
         });

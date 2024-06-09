@@ -19,6 +19,7 @@ export function gameData(min, max) {
     printUpDown,
     showInput,
     numberValidation,
+    parseBoundary,
   };
 
   function createRandomNumber(min, max) {
@@ -47,5 +48,12 @@ export function gameData(min, max) {
     let isValid;
     isValid = userInput.every((input) => !isNaN(input));
     return isValid;
+  }
+
+  function parseBoundary(boundary) {
+    const [first, second] = boundary.split(",");
+    const minNumber = Math.min(first, second);
+    const maxNumber = Math.max(first, second);
+    return [minNumber, maxNumber];
   }
 }
