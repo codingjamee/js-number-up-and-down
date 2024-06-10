@@ -11,11 +11,34 @@ view에서 전달한 인수를 변경하면 안된다는 것으로 해석?
 이전 추측들을 보여준다
 
  */
+export const gameStatus = {
+  READY: "READY",
+  USERSETTING: {
+    ONE: "min",
+    TWO: "max",
+    THREE: "trialLimit",
+  },
+  DEFAULTSETTING: "DEFAULTSETTING",
+  PLAYING: "PLAYING",
+  SUCCESS: "SUCCESS",
+  FAIL: "FAIL",
+  ASKRESTART: "ASKRESTART",
+  END: "END",
+};
 
-export function gameData(min, max) {
-  //객체를 활용한 이유 하나의 객체로 UI 로직을 호출하여 데이터를 보내주기 위해
+export const InitialGameConfig = {
+  status: gameStatus.READY,
+  settingType: "user",
+  userTrial: 0,
+  trialLimit: 0,
+  answer: gameData().createRandomNumber(min, max),
+  min: 1,
+  max: 50,
+};
+
+export function gameData() {
   return {
-    answer: createRandomNumber(min, max),
+    createRandomNumber: (min, max) => createRandomNumber(min, max),
     printUpDown,
     showInput,
     numberValidation,
