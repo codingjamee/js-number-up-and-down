@@ -119,8 +119,10 @@ export async function endGame(playState, result) {
   if (!result) onFailGame();
 
   console.log(returnResultMessage(state.status));
+
   const answer = await askRestart();
   if (answer === "yes") return playGame();
+  
   return console.log("게임을 종료합니다.");
 
   function onFailGame() {
