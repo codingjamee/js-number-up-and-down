@@ -19,13 +19,14 @@ import {
 export async function startGame() {
   const { promptCount, totalSettingCount } = { ...settingConfig };
   const state = initializeGameSetting();
+  changeStatus(state.status, gameStatus.USERSETTING_COUNT[promptCount]);
 
   const whileCondition = promptCount <= totalSettingCount;
-  changeStatus(state.status, gameStatus.USERSETTING_COUNT[promptCount]);
   await asyncloopWhileCondition(promptUserSetting, whileCondition);
 
   const targetStatus = gameStatus.PLAYING;
   changeStatus(state.status, targetStatus);
+
   computerSetting();
 
   return playGame(state);
@@ -99,6 +100,8 @@ export async function playGame(state) {
     console.log(`${isUp ? "up" : "down"}`);
 
     addUserTrials(userInput);
+    console.log(user.userTrials);
+
     addCount();
   }
 
@@ -122,7 +125,7 @@ export async function endGame(playState, result) {
 
   const answer = await askRestart();
   if (answer === "yes") return playGame();
-  
+
   return console.log("게임을 종료합니다.");
 
   function onFailGame() {
