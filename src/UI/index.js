@@ -21,15 +21,18 @@ export async function startGame() {
   const state = initializeGameSetting();
   changeStatus(state.status, gameStatus.USERSETTING_COUNT[promptCount]);
 
-  const whileCondition = promptCount <= totalSettingCount;
-  await asyncloopWhileCondition(promptUserSetting, whileCondition);
+  userSetting();
+  computerSetting();
 
   const targetStatus = gameStatus.PLAYING;
   changeStatus(state.status, targetStatus);
 
-  computerSetting();
-
   return playGame(state);
+
+  async function userSetting() {
+    const whileCondition = promptCount <= totalSettingCount;
+    await asyncloopWhileCondition(promptUserSetting, whileCondition);
+  }
 
   function computerSetting(state) {
     const randomNumber = createRandomNumber(state.min, state.max);
