@@ -8,18 +8,23 @@ import {
   changeStatus,
   returnSettingQuestion,
   returnSettingErrorMessage,
+  returnGameQuestion,
+  returnGameErrorMessage,
+  copyArr,
+  checkUpDown,
+  returnResultMessage,
+  asyncloopWhileCondition,
 } from "../domain/index.js";
-
-
 
 export async function startGame() {
   const { promptCount, totalSettingCount } = { ...settingConfig };
   const state = initializeGameSetting();
 
   const whileCondition = promptCount <= totalSettingCount;
-  loopWhileCondition(promptUserSetting, whileCondition);
+  changeStatus(state.status, gameStatus.USERSETTING_COUNT[promptCount]);
+  await asyncloopWhileCondition(promptUserSetting, whileCondition);
 
-  const targetStatus = gameStatus.USERSETTING_COUNT[promptCount];
+  const targetStatus = gameStatus.PLAYING;
   changeStatus(state.status, targetStatus);
   computerSetting();
 
@@ -39,23 +44,95 @@ export async function startGame() {
     return count++;
   }
 
-  function loopWhileCondition(loopFn, condition) {
-    //특정 조건 내에 함수 반복
-    while (condition) {
-      loopFn();
-    }
-  }
-
   async function promptUserSetting() {
     //count만큼 user setting받기
-    const result = await readLineAsync(returnSettingQuestion(state.status));
+    const userAnswer = await readLineAsync(returnSettingQuestion(state.status));
 
-    const isValid = checkPromptNumber(result);
+    const isValid = checkPromptNumber(userAnswer);
     if (!isValid) return console.log(returnSettingErrorMessage(state.status));
 
     const nowStatus = state[gameStatus.USERSETTING_COUNT[promptCount]];
-    changeStatus(nowStatus, result);
+    changeStatus(nowStatus, userAnswer);
     addCount(promptCount);
+  }
+}
+
+export async function playGame(state) {
+  const playState = { ...state };
+
+  const whileCondition = playState.userTrials.length <= playState.trialLimit;
+
+  const userAnswer = await asyncloopWhileCondition(
+    continueGame,
+    whileCondition
+  );
+
+  endGame(playState, userAnswer);
+
+  //계속 게임이 진행됨
+  async function continueGame() {
+    //validCount인지 확인
+    const isValidCount = checkValidCount(state);
+    if (!isValidCount) return changeStatus(state);
+    //loop를 빠져나옴
+
+    //user 입력 받음
+    const userInput = await promptUser();
+
+    //validation 확인
+    const isValid = checkPromptNumber(userInput);
+    if (!isValid) return console.log(returnGameErrorMessage());
+
+    //answer인지 확인
+    const isAnswer = checkIsAnswer(userInput, playState);
+    if (isAnswer) return true;
+
+    onValidGame(userInput);
+  }
+
+  function checkValidCount(state) {
+    return state.trialLimit >= playState.userTrials.length;
+  }
+
+  function onValidGame(userInput) {
+    const isUp = checkUpDown(playState.answer, userInput);
+    console.log(`${isUp ? "up" : "down"}`);
+
+    addUserTrials(userInput);
+    addCount();
+  }
+
+  function addUserTrials(userInput) {}
+
+  async function promptUser() {
+    //user의 응답을 받음
+    return await readLineAsync(returnSettingQuestion(state.status));
+  }
+
+  function checkIsAnswer(userTry, state) {
+    return userTry === state.answer;
+  }
+}
+
+export async function endGame(playState, result) {
+  if (result) onSuccessGame();
+  if (!result) onFailGame();
+
+  console.log(returnResultMessage(state.status));
+  const answer = await askRestart();
+  if (answer === "yes") return playGame();
+  return console.log("게임을 종료합니다.");
+
+  function onFailGame() {
+    changeStatus(playState.status, gameStatus.FAIL);
+  }
+
+  function onSuccessGame() {
+    changeStatus(playState.status, gameStatus.SUCCESS);
+  }
+
+  async function askRestart() {
+    return await readLineAsync("다시 시작하시겠습니까? (yes / no) : ");
   }
 }
 
@@ -80,17 +157,3 @@ function readLineAsync(query) {
     });
   });
 }
-
-// export async function playGame(state) {
-//   const playState = { ...state };
-
-//   while (state.status === gameStatus.PLAYING) {
-//     promptUser();
-//   }
-
-//   async function promptUser() {
-//     //user의 응답을 받음
-//     return await readLineAsync();
-//   }
-// }
-// export async function endGame() {}

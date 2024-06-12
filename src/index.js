@@ -1,3 +1,3 @@
-import { playGame } from "./UI/index.js";
+import { startGame } from "./UI/index.js";
 
-playGame();
+startGame();
