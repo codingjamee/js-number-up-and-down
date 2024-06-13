@@ -1,6 +1,6 @@
 export const gameStatus = {
   READY: "READY",
-  USERSETTING_COUNT: ["MIN", "MAX", "TRIALLIMIT"],
+  USERSETTING_COUNT: ["min", "max", "limit"],
   DEFAULTSETTING: "DEFAULTSETTING",
   PLAYING: "PLAYING",
   SUCCESS: "SUCCESS",
@@ -25,7 +25,7 @@ export function returnSettingQuestion(state) {
   const dynamicWord = {
     min: `최솟 값을`,
     max: `최댓 값을`,
-    limit: `게임 시작을 위해 진행 가능 횟수를`,
+    limit: `진행 가능 횟수를`,
   };
   return `게임 시작을 위해 ${dynamicWord[state]} 입력해주세요. :`;
 }
@@ -57,7 +57,7 @@ export function returnResultMessage(state) {
 }
 
 export const settingConfig = {
-  promptCount: 1,
+  promptCount: 0,
   totalSettingCount: 3,
 };
 
@@ -74,10 +74,13 @@ export function parseBoundary(boundary) {
   return [minNumber, maxNumber];
 }
 
-export function changeStatus(state, change) {
+export function changeState(state, change) {
+  if(state.status) state.status = change;
+}
+
+export function changeAnswer(state, change) {
   //status를 변경
-  state = change;
-  return;
+  state.answer = change;
 }
 
 export function checkPromptNumber(prompt) {
@@ -96,7 +99,6 @@ export function pushArr(arr, elem) {
 export function checkUpDown(answer, input) {
   return answer > input;
 }
-
 
 export async function asyncloopWhileCondition(loopFn, condition) {
   //특정 조건 내에 함수 반복

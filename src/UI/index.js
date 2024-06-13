@@ -5,7 +5,7 @@ import {
   checkPromptNumber,
   createRandomNumber,
   settingConfig,
-  changeStatus,
+  changeState,
   returnSettingQuestion,
   returnSettingErrorMessage,
   returnGameQuestion,
@@ -18,25 +18,27 @@ import {
 
 export async function startGame() {
   const { promptCount, totalSettingCount } = { ...settingConfig };
-  const state = initializeGameSetting();
-  changeStatus(state.status, gameStatus.USERSETTING_COUNT[promptCount]);
 
-  userSetting();
+  const settingState = initializeGameSetting();
+  changeState(settingState.status, gameStatus.USERSETTING_COUNT[promptCount]);
+  console.log("24", settingState.status);
+
+  await userSetting();
   computerSetting();
 
   const targetStatus = gameStatus.PLAYING;
-  changeStatus(state.status, targetStatus);
+  changeState(settingState.status, targetStatus);
 
-  return playGame(state);
+  return playGame(settingState);
 
   async function userSetting() {
-    const whileCondition = promptCount <= totalSettingCount;
+    const whileCondition = promptCount < totalSettingCount;
     await asyncloopWhileCondition(promptUserSetting, whileCondition);
   }
 
-  function computerSetting(state) {
-    const randomNumber = createRandomNumber(state.min, state.max);
-    changeStatus(state.answer, randomNumber);
+  function computerSetting() {
+    const randomNumber = createRandomNumber(settingState.min, settingState.max);
+    changeAnswer(settingState, randomNumber);
   }
 
   function initializeGameSetting() {
@@ -50,13 +52,13 @@ export async function startGame() {
 
   async function promptUserSetting() {
     //count만큼 user setting받기
-    const userAnswer = await readLineAsync(returnSettingQuestion(state.status));
+    const userAnswer = await readLineAsync(returnSettingQuestion(settingState.status));
 
     const isValid = checkPromptNumber(userAnswer);
-    if (!isValid) return console.log(returnSettingErrorMessage(state.status));
+    if (!isValid) return console.log(returnSettingErrorMessage(settingState.status));
 
-    const nowStatus = state[gameStatus.USERSETTING_COUNT[promptCount]];
-    changeStatus(nowStatus, userAnswer);
+    const nowStatus = settingState[gameStatus.USERSETTING_COUNT[promptCount]];
+    changeState(nowStatus, userAnswer);
     addCount(promptCount);
   }
 }
@@ -77,7 +79,7 @@ export async function playGame(state) {
   async function continueGame() {
     //validCount인지 확인
     const isValidCount = checkValidCount(state);
-    if (!isValidCount) return changeStatus(state);
+    if (!isValidCount) return changeState(state);
     //loop를 빠져나옴
 
     //user 입력 받음
@@ -94,8 +96,8 @@ export async function playGame(state) {
     onValidGame(userInput);
   }
 
-  function checkValidCount(state) {
-    return state.trialLimit >= playState.userTrials.length;
+  function checkValidCount() {
+    return playState.trialLimit >= playState.userTrials.length;
   }
 
   function onValidGame(userInput) {
@@ -108,23 +110,27 @@ export async function playGame(state) {
     addCount();
   }
 
-  function addUserTrials(userInput) {}
+  function addUserTrials(userInput) {
+    playState.userTrials.push(userInput);
+  }
 
   async function promptUser() {
     //user의 응답을 받음
-    return await readLineAsync(returnSettingQuestion(state.status));
+    return await readLineAsync(returnGameQuestion(playState.status));
   }
 
-  function checkIsAnswer(userTry, state) {
-    return userTry === state.answer;
+  function checkIsAnswer(userTry) {
+    return userTry === playState.answer;
   }
 }
 
 export async function endGame(playState, result) {
+  const endState = {...playState}
+
   if (result) onSuccessGame();
   if (!result) onFailGame();
 
-  console.log(returnResultMessage(state.status));
+  console.log(returnResultMessage(endState.status));
 
   const answer = await askRestart();
   if (answer === "yes") return playGame();
@@ -132,11 +138,11 @@ export async function endGame(playState, result) {
   return console.log("게임을 종료합니다.");
 
   function onFailGame() {
-    changeStatus(playState.status, gameStatus.FAIL);
+    changeState(endState.status, gameStatus.FAIL);
   }
 
   function onSuccessGame() {
-    changeStatus(playState.status, gameStatus.SUCCESS);
+    changeState(endState.status, gameStatus.SUCCESS);
   }
 
   async function askRestart() {
