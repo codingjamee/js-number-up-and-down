@@ -15,10 +15,10 @@ export async function startGame() {
   //추후 여러 게임을 동시에 진행하기 위해
   const gameState1 = GameState();
 
-  const userSettingCount = gameState1.getState().promptCount;
+  const userSettingCount = () => gameState1.getState().promptCount;
   gameState1.updateState(
     "status",
-    gameStatus.USERSETTING_COUNT[userSettingCount]
+    gameStatus.USERSETTING_COUNT[userSettingCount()]
   );
 
   await userSetting();
@@ -31,13 +31,14 @@ export async function startGame() {
 
   async function userSetting() {
     const totalUserSettingCount = gameState1.getState().totalSettingCount;
-    const whileCondition = () => userSettingCount < totalUserSettingCount;
+    const whileCondition = () => userSettingCount() < totalUserSettingCount;
     await runAsyncLoopWhileCondition(promptUserSetting, whileCondition);
   }
 
   function computerSetting() {
+    const { min, max } = gameState1.getState();
     const randomNumber = createRandomNumber(min, max);
-    changeAnswer(settingState, randomNumber);
+    gameState1.updateState('answer', randomNumber);
   }
 
   async function promptUserSetting() {
@@ -56,10 +57,7 @@ export async function startGame() {
     const count = gameState1.getState().promptCount;
     const targetStatus = gameStatus.USERSETTING_COUNT[count];
 
-    gameState1.updateState(
-      targetStatus,
-      numberOrStringAnswer(count, userAnswer)
-    );
+    gameState1.updateState(targetStatus, toNumber(userAnswer));
     console.log("answer를 설정", gameState1.getState());
 
     gameState1.updateState("promptCount", addNumber(count));
@@ -68,13 +66,6 @@ export async function startGame() {
       "status",
       gameStatus.USERSETTING_COUNT[addNumber(count)]
     );
-  }
-
-  function numberOrStringAnswer(state, answer) {
-    if (state === 0 || state === 1) {
-      return toNumber(answer);
-    }
-    return answer;
   }
 }
 
