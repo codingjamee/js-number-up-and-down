@@ -1,65 +1,64 @@
 import readline from "readline";
 import {
   gameStatus,
-  InitialGameConfig,
   checkPromptNumber,
   createRandomNumber,
-  settingConfig,
   changeState,
-  returnSettingQuestion,
-  returnSettingErrorMessage,
-  returnGameQuestion,
-  returnGameErrorMessage,
-  copyArr,
   checkUpDown,
-  returnResultMessage,
-  asyncloopWhileCondition,
+  runAsyncLoopWhileCondition,
+  GameState,
+  showGuideMessage,
+  getGameInstructions,
 } from "../domain/index.js";
+import { addNumber } from "../utils/util.js";
 
 export async function startGame() {
-  const { promptCount, totalSettingCount } = { ...settingConfig };
+  //추후 여러 게임을 동시에 진행하기 위해
+  const gameState1 = GameState();
 
-  const settingState = initializeGameSetting();
-  changeState(settingState.status, gameStatus.USERSETTING_COUNT[promptCount]);
-  console.log("24", settingState.status);
+  const userSettingCount = gameState1.getState().promptCount;
+  updateState(
+    "status",
+    gameState1.getState().USERSETTING_COUNT[userSettingCount]
+  );
 
   await userSetting();
   computerSetting();
 
-  const targetStatus = gameStatus.PLAYING;
-  changeState(settingState.status, targetStatus);
+  const targetStatus = gameState1.getState().PLAYING;
+  gameState1.updateState("status", targetStatus);
 
-  return playGame(settingState);
+  return playGame();
 
   async function userSetting() {
-    const whileCondition = promptCount < totalSettingCount;
-    await asyncloopWhileCondition(promptUserSetting, whileCondition);
+    const totalUserSettingCount = gameState1.getState().totalSettingCount;
+    const whileCondition = userSettingCount < totalUserSettingCount;
+    await runAsyncLoopWhileCondition(promptUserSetting, whileCondition);
   }
 
   function computerSetting() {
-    const randomNumber = createRandomNumber(settingState.min, settingState.max);
+    const randomNumber = createRandomNumber(min, max);
     changeAnswer(settingState, randomNumber);
-  }
-
-  function initializeGameSetting() {
-    //gameSetting초기화
-    return { ...InitialGameConfig };
-  }
-
-  function addCount(count) {
-    return count++;
   }
 
   async function promptUserSetting() {
     //count만큼 user setting받기
-    const userAnswer = await readLineAsync(returnSettingQuestion(settingState.status));
+    const userAnswer = await readLineAsync(
+      getGameInstructions.returnSettingQuestion(gameState1.getState().status)
+    );
 
     const isValid = checkPromptNumber(userAnswer);
-    if (!isValid) return console.log(returnSettingErrorMessage(settingState.status));
+    if (!isValid) {
+      gameState1.updateState("status", gameStatus.NOTVALID_ANSWER);
+      const message = getGameInstructions.returnSettingErrorMessage(state);
+      return showGuideMessage(message);
+    }
 
-    const nowStatus = settingState[gameStatus.USERSETTING_COUNT[promptCount]];
-    changeState(nowStatus, userAnswer);
-    addCount(promptCount);
+    const count = gameState1.getState().promptCount;
+    const targetStatus = gameStatus.USERSETTING_COUNT[count];
+
+    gameState1.updateState(targetStatus, userAnswer);
+    gameState1.updateState("promptCount", addNumber(count));
   }
 }
 
@@ -68,7 +67,7 @@ export async function playGame(state) {
 
   const whileCondition = playState.userTrials.length <= playState.trialLimit;
 
-  const userAnswer = await asyncloopWhileCondition(
+  const userAnswer = await runAsyncLoopWhileCondition(
     continueGame,
     whileCondition
   );
@@ -125,7 +124,7 @@ export async function playGame(state) {
 }
 
 export async function endGame(playState, result) {
-  const endState = {...playState}
+  const endState = { ...playState };
 
   if (result) onSuccessGame();
   if (!result) onFailGame();
