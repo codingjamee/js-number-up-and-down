@@ -5,3 +5,7 @@ export function copyObject(object) {
 export function pushArray(array, elem) {
   return array.push(elem);
 }
+
+export function addNumber (number) {
+  return number++
+}
