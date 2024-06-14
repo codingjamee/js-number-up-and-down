@@ -1,3 +1,5 @@
+import { copyObject } from "../utils/util";
+
 export const gameStatus = {
   READY: "READY",
   USERSETTING_COUNT: ["min", "max", "limit"],
@@ -31,7 +33,7 @@ export const GameState = () => {
 
   return {
     getState() {
-      return state;
+      return copyObject(state); //get함수에서 객체 변경 방지를 위해
     },
 
     updateState(key, value) {
