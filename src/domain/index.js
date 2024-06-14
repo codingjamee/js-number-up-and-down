@@ -1,7 +1,7 @@
 export const gameStatus = {
   READY: "READY",
   USERSETTING_COUNT: ["min", "max", "limit"],
-  DEFAULTSETTING: "DEFAULTSETTING",
+  COMPUTERSETTING: "COMPUTERSETTING",
   PLAYING: "PLAYING",
   SUCCESS: "SUCCESS",
   FAIL: "FAIL",
@@ -12,12 +12,36 @@ export const gameStatus = {
 export const InitialGameConfig = {
   status: gameStatus.READY,
   settingType: "user",
+  promptCount: 0,
+  totalSettingCount: 3,
   userTrialCount: 0,
   userTrials: [],
   trialLimit: 0,
   answer: 0,
   min: 1,
   max: 50,
+};
+
+export const settingConfig = {
+  promptCount: 0,
+};
+
+export const GameState = () => {
+  const state = { ...InitialGameConfig };
+
+  return {
+    getState() {
+      return state;
+    },
+
+    updateState(key, value) {
+      state[key] = value;
+    },
+
+    resetState() {
+      state = { ...InitialGameConfig };
+    },
+  };
 };
 
 export function returnSettingQuestion(state) {
@@ -56,11 +80,6 @@ export function returnResultMessage(state) {
   축하합니다! ${state.trialCount}번 만에 숫자를 맞추셨습니다.`;
 }
 
-export const settingConfig = {
-  promptCount: 0,
-  totalSettingCount: 3,
-};
-
 export function createRandomNumber(min, max) {
   const minNumber = min;
   const maxNumber = max;
@@ -75,7 +94,7 @@ export function parseBoundary(boundary) {
 }
 
 export function changeState(state, change) {
-  if(state.status) state.status = change;
+  if (state.status) state.status = change;
 }
 
 export function changeAnswer(state, change) {
@@ -86,14 +105,6 @@ export function changeAnswer(state, change) {
 export function checkPromptNumber(prompt) {
   //prompt가 숫자인지 check함
   return prompt.every((input) => !isNaN(input));
-}
-
-export function copyArr(arr) {
-  return JSON.parse(JSON.stringify(arr));
-}
-
-export function pushArr(arr, elem) {
-  return arr.push(elem);
 }
 
 export function checkUpDown(answer, input) {
