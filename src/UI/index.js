@@ -38,7 +38,7 @@ export async function startGame() {
   function computerSetting() {
     const { min, max } = gameState1.getState();
     const randomNumber = createRandomNumber(min, max);
-    gameState1.updateState('answer', randomNumber);
+    gameState1.updateState("answer", randomNumber);
   }
 
   async function promptUserSetting() {
@@ -58,10 +58,7 @@ export async function startGame() {
     const targetStatus = gameStatus.USERSETTING_COUNT[count];
 
     gameState1.updateState(targetStatus, toNumber(userAnswer));
-    console.log("answer를 설정", gameState1.getState());
-
     gameState1.updateState("promptCount", addNumber(count));
-
     gameState1.updateState(
       "status",
       gameStatus.USERSETTING_COUNT[addNumber(count)]
