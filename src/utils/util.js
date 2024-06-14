@@ -6,6 +6,10 @@ export function pushArray(array, elem) {
   return array.push(elem);
 }
 
-export function addNumber (number) {
-  return number++
+export function addNumber(number) {
+  return number + 1;
+}
+
+export function toNumber(number) {
+  return parseFloat(number);
 }
