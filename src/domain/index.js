@@ -1,4 +1,4 @@
-import { copyObject } from "../utils/util";
+import { copyObject } from "../utils/util.js";
 
 export const gameStatus = {
   READY: "READY",
@@ -60,9 +60,9 @@ export function parseBoundary(boundary) {
   return [minNumber, maxNumber];
 }
 
-export function checkPromptNumber(prompt) {
-  //prompt가 숫자인지 check함
-  return prompt.every((input) => !isNaN(input));
+export function checkPromptNumber(answer) {
+  //answer가 숫자인지 check함
+  return !isNaN(answer);
 }
 
 export function checkUpDown(answer, input) {
@@ -71,7 +71,7 @@ export function checkUpDown(answer, input) {
 
 export async function runAsyncLoopWhileCondition(loopFn, condition) {
   //특정 조건 내에 함수 반복
-  while (condition) {
+  while (condition()) {
     await loopFn();
   }
 }
