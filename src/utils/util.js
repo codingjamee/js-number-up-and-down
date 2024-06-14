@@ -1,7 +1,7 @@
-export function copyArr(arr) {
-  return JSON.parse(JSON.stringify(arr));
+export function copyObject(object) {
+  return JSON.parse(JSON.stringify(object));
 }
 
-export function pushArr(arr, elem) {
-  return arr.push(elem);
+export function pushArray(array, elem) {
+  return array.push(elem);
 }
