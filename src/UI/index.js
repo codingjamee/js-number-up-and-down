@@ -1,161 +1,158 @@
-/**
-계산 로직과 다른점은
-계산은 사용자와의 인터렉션에 관련이 없으나
-UI는 사용자와의 인터렉션에 관련이 있음
-그러므로 count에 따라 보여줘야할지 말지는 UI에서 다뤄야 한다고 판단했음
- */
 import readline from "readline";
-import { gameData } from "../domain/index.js";
+import {
+  gameStatus,
+  checkPromptNumber,
+  createRandomNumber,
+  checkUpDown,
+  runAsyncLoopWhileCondition,
+  GameState,
+  showGuideMessage,
+  getGameInstructions,
+} from "../domain/index.js";
+import { addNumber, toNumber } from "../utils/util.js";
 
-/**
- * 따로 constant 객체로 뺀 이유
- * 나중에 문구를 수정할 때 묶어두면 편함
- * 프로퍼티 명으로 문구 빠르게 유추 가능
- */
-const constant = {
-  askBoundary: "게임 시작을 위해 최소 값, 최대 값을 입력해주세요. (예: 1, 50) ",
-  askTrialLimit: "게임 시작을 위해 진행 가능 횟수를 입력해주세요.",
-  askRestart: "게임을 다시 시작하시겠습니까? (yes/no): ",
-  restart: "게임을 다시 시작합니다.",
-};
+export async function startGame() {
+  //추후 여러 게임을 동시에 진행하기 위해
+  const gameState1 = GameState();
 
-const getGameStatusMessages = ({
-  notValidType,
-  answer,
-  trialCount,
-  minNumber,
-  maxNumber,
-}) => {
-  return {
-    notValid: `입력하신 ${notValidType}이 유효하지 않습니다.`,
-    guessNumber: `컴퓨터가 ${minNumber}~${maxNumber} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`,
-    correct: `정답! 
-  축하합니다! ${trialCount}번 만에 숫자를 맞추셨습니다.`,
-    fail: `5회 초과! 숫자를 맞추지 못했습니다. (정답: ${answer})`,
-    end: "게임을 종료합니다.",
-  };
-};
+  const userSettingCount = () => gameState1.getState().promptCount;
+  gameState1.updateState(
+    "status",
+    gameStatus.USERSETTING_COUNT[userSettingCount()]
+  );
 
-/**
-사용자 입력을 받는다
-최소 최대값 입력을 받는다 
-재시작 종료 옵션
-몇회만에 맞췄는지 보여준다
-*/
+  await userSetting();
+  computerSetting();
 
-export async function playGame() {
-  const { answer, trialLimit, minNumber, maxNumber } =
-    await initializeGameSetting();
+  const targetStatus = gameState1.getState().PLAYING;
+  gameState1.updateState("status", targetStatus);
 
-  displayMessage({
-    result: getGameStatusMessages({ minNumber, maxNumber }).guessNumber,
-  });
-  const { result, trialCount } = await executeGuessingGame(trialLimit, answer);
-  displayMessage({ result, trialCount, answer });
-  askAndRestart({
-    restartFn: playGame,
-    restartMessageFn: () => displayMessage({ result: constant.restart }),
-  });
-}
+  return playGame();
 
-function displayMessage({ result, trialCount, answer }) {
-  if (result === "success") {
-    console.log(getGameStatusMessages({ trialCount }).correct);
-    return;
+  async function userSetting() {
+    const totalUserSettingCount = gameState1.getState().totalSettingCount;
+    const whileCondition = () => userSettingCount() < totalUserSettingCount;
+    await runAsyncLoopWhileCondition(promptUserSetting, whileCondition);
   }
-  if (result === "fail") {
-    console.log(getGameStatusMessages({ answer }).fail);
-    return;
+
+  function computerSetting() {
+    const { min, max } = gameState1.getState();
+    const randomNumber = createRandomNumber(min, max);
+    gameState1.updateState("answer", randomNumber);
   }
-  console.log(result);
-}
 
-async function initializeGameSetting() {
-  const boundary = await promptValidateUserInput({
-    askCotent: constant.askBoundary,
-    mutatePromptFn: (result) => result.split(","),
-    validateFn: gameData().numberValidation,
-    onInValid: (notValidType) => {
-      displayMessage({
-        result: getGameStatusMessages({ notValidType }).notValid,
-      });
-      askAndRestart({
-        restartFn: playGame,
-      });
-    },
-  });
-  const [minNumber, maxNumber] = gameData().parseBoundary(boundary);
-  const trialLimit = await promptValidateUserInput({
-    askCotent: constant.askTrialLimit,
-    validateFn: gameData().numberValidation,
-    onInValid: (notValidType) => {
-      displayMessage({
-        result: getGameStatusMessages({ notValidType }).notValid,
-      });
-      askAndRestart({
-        restartFn: playGame,
-      });
-    },
-  });
-  const answer = gameData(minNumber, maxNumber).answer;
-  return {
-    answer,
-    trialLimit,
-    minNumber,
-    maxNumber,
-  };
-}
-
-async function promptValidateUserInput({
-  askCotent,
-  mutatePromptFn = undefined,
-  validateFn,
-  onInValid,
-}) {
-  let result = await promptUser(askCotent);
-  if (mutatePromptFn) {
-    result = mutatePromptFn(result);
-  }
-  if (validateFn(result)) return result;
-  onInValid(result);
-}
-
-async function promptUser(askCotent) {
-  return await readLineAsync(askCotent);
-}
-
-async function executeGuessingGame(trialLimit, answer) {
-  let trialCount = 1;
-  const userTrialArray = [];
-  while (trial <= trialLimit) {
-    const inputValue = await promptValidateUserInput({
-      askCotent: "숫자 입력: ",
-      validateFn: gameData().numberValidation,
-      onInValid: (notValidType) => {
-        displayMessage({
-          result: getGameStatusMessages({ notValidType }).notValid,
-        });
-        return null;
-      },
-    });
-
-    if (gameData().isAnswerCorrect(parseFloat(inputValue), answer)) {
-      return { result: "success", trialCount };
-    }
-    if (trialCount > trialLimit) return { result: "fail" };
-
-    const userAttempts = userTrialArray.concat(
-      gameData().showInput(userTrialArray, inputValue)
+  async function promptUserSetting() {
+    //count만큼 user setting받기
+    const userAnswer = await readLineAsync(
+      getGameInstructions().returnSettingQuestion(gameState1.getState().status)
     );
-    displayMessage({ result: `이전 추측: ${userAttempts.join(", ")}` });
-    const upDown = gameData().printUpDown(answer, inputValue);
-    displayMessage({ result: upDown });
 
-    trialCount++;
+    const isValid = checkPromptNumber(userAnswer);
+    if (!isValid) {
+      gameState1.updateState("status", gameStatus.NOTVALID_ANSWER);
+      const message = getGameInstructions().returnSettingErrorMessage(state);
+      return showGuideMessage(message);
+    }
+
+    const count = gameState1.getState().promptCount;
+    const targetStatus = gameStatus.USERSETTING_COUNT[count];
+
+    gameState1.updateState(targetStatus, toNumber(userAnswer));
+    gameState1.updateState("promptCount", addNumber(count));
+    gameState1.updateState(
+      "status",
+      gameStatus.USERSETTING_COUNT[addNumber(count)]
+    );
   }
-  return trialCount;
 }
 
+export async function playGame(state) {
+  const playState = { ...state };
+
+  const whileCondition = () =>
+    playState.userTrials.length <= playState.trialLimit;
+
+  const userAnswer = await runAsyncLoopWhileCondition(
+    continueGame,
+    whileCondition()
+  );
+
+  endGame(playState, userAnswer);
+
+  //계속 게임이 진행됨
+  async function continueGame() {
+    //validCount인지 확인
+    const isValidCount = checkValidCount(state);
+    if (!isValidCount) return changeState(state);
+    //loop를 빠져나옴
+
+    //user 입력 받음
+    const userInput = await promptUser();
+
+    //validation 확인
+    const isValid = checkPromptNumber(userInput);
+    if (!isValid) return console.log(returnGameErrorMessage());
+
+    //answer인지 확인
+    const isAnswer = checkIsAnswer(userInput, playState);
+    if (isAnswer) return true;
+
+    onValidGame(userInput);
+  }
+
+  function checkValidCount() {
+    return playState.trialLimit >= playState.userTrials.length;
+  }
+
+  function onValidGame(userInput) {
+    const isUp = checkUpDown(playState.answer, userInput);
+    console.log(`${isUp ? "up" : "down"}`);
+
+    addUserTrials(userInput);
+    console.log(user.userTrials);
+
+    addCount();
+  }
+
+  function addUserTrials(userInput) {
+    playState.userTrials.push(userInput);
+  }
+
+  async function promptUser() {
+    //user의 응답을 받음
+    return await readLineAsync(returnGameQuestion(playState.status));
+  }
+
+  function checkIsAnswer(userTry) {
+    return userTry === playState.answer;
+  }
+}
+
+export async function endGame(playState, result) {
+  const endState = { ...playState };
+
+  if (result) onSuccessGame();
+  if (!result) onFailGame();
+
+  console.log(returnResultMessage(endState.status));
+
+  const answer = await askRestart();
+  if (answer === "yes") return playGame();
+
+  return console.log("게임을 종료합니다.");
+
+  function onFailGame() {
+    changeState(endState.status, gameStatus.FAIL);
+  }
+
+  function onSuccessGame() {
+    changeState(endState.status, gameStatus.SUCCESS);
+  }
+
+  async function askRestart() {
+    return await readLineAsync("다시 시작하시겠습니까? (yes / no) : ");
+  }
+}
 
 function readLineAsync(query) {
   return new Promise((resolve, reject) => {
@@ -177,12 +174,4 @@ function readLineAsync(query) {
       resolve(input);
     });
   });
-}
-
-async function askAndRestart({ restartFn, restartMessageFn }) {
-  const restartOrNot = await promptUser(constant.askRestart);
-  if (restartOrNot === "yes") {
-    return restartFn();
-  }
-  if (restartMessageFn) restartMessageFn();
 }

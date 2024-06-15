@@ -1,64 +1,120 @@
-/**
- *
-domain의 하위의 모듈은 view하위의 모듈에 의존하지 말아야 한다는 의미는
-view에서 전달한 인수를 변경하면 안된다는 것으로 해석?
-함수내의 내부함수로 설정한 까닭은 
- */
-/**
-계산하고 결과를 출력하는 로직
-최소 최대 값 사이의 랜덤숫자 생성
-업 다운 정답 계산하여 출력
-이전 추측들을 보여준다
+import { copyObject } from "../utils/util.js";
 
- */
+export const gameStatus = {
+  READY: "READY",
+  USERSETTING_COUNT: ["min", "max", "limit"],
+  COMPUTERSETTING: "COMPUTERSETTING",
+  PLAYING: "PLAYING",
+  SUCCESS: "SUCCESS",
+  FAIL: "FAIL",
+  ASKRESTART: "ASKRESTART",
+  END: "END",
+  NOTVALID_ANSWER: "NOTVALID_ANSWER",
+};
 
-export function gameData(min, max) {
-  //객체를 활용한 이유 하나의 객체로 UI 로직을 호출하여 데이터를 보내주기 위해
+export const InitialGameConfig = {
+  status: gameStatus.READY,
+  settingType: "user",
+  promptCount: 0,
+  totalSettingCount: 3,
+  userTrialCount: 0,
+  userTrials: [],
+  trialLimit: 0,
+  answer: 0,
+  min: 1,
+  max: 50,
+};
+
+export const settingConfig = {
+  promptCount: 0,
+};
+
+export const GameState = () => {
+  const state = { ...InitialGameConfig };
+
   return {
-    answer: createRandomNumber(min, max),
-    printUpDown,
-    showInput,
-    numberValidation,
-    parseBoundary,
-    isAnswerCorrect,
+    getState() {
+      return copyObject(state); //get함수에서 객체 변경 방지를 위해
+    },
+
+    updateState(key, value) {
+      state[key] = value;
+    },
+
+    resetState() {
+      state = { ...InitialGameConfig };
+    },
   };
+};
 
-  function createRandomNumber(min, max) {
-    const minNumber = min;
-    const maxNumber = max;
-    return Math.floor(Math.random() * maxNumber + minNumber);
-  }
+export function createRandomNumber(min, max) {
+  const minNumber = min;
+  const maxNumber = max;
+  return Math.floor(Math.random() * maxNumber + minNumber);
+}
 
-  function printUpDown(answer, input) {
-    if (answer > input) {
-      return "업";
-    }
-    if (answer < input) {
-      return "다운";
-    }
-  }
+export function parseBoundary(boundary) {
+  const [first, second] = boundary.split(",");
+  const minNumber = Math.min(first, second);
+  const maxNumber = Math.max(first, second);
+  return [minNumber, maxNumber];
+}
 
-  function showInput(guessArr, guessInput) {
-    const guess = guessArr;
-    const toNumberInput = parseFloat(guessInput);
-    if (Array.isArray(guess)) guess.push(toNumberInput);
-    return guess;
-  }
+export function checkPromptNumber(answer) {
+  //answer가 숫자인지 check함
+  return !isNaN(answer);
+}
 
-  function numberValidation(...userInput) {
-    let isValid;
-    isValid = userInput.every((input) => !isNaN(input));
-    return isValid;
-  }
+export function checkUpDown(answer, input) {
+  return answer > input;
+}
 
-  function parseBoundary(boundary) {
-    const [first, second] = boundary.split(",");
-    const minNumber = Math.min(first, second);
-    const maxNumber = Math.max(first, second);
-    return [minNumber, maxNumber];
+export async function runAsyncLoopWhileCondition(loopFn, condition) {
+  //특정 조건 내에 함수 반복
+  while (condition()) {
+    await loopFn();
   }
+}
 
-  function isAnswerCorrect(input, answer) {
-    return input === answer;
-  }
+export const getGameInstructions = () => {
+  // 안내 메시지 함수들을 리턴
+
+  return {
+    returnSettingQuestion(state) {
+      //필요한 세팅 요청문구를 return
+      const dynamicWord = {
+        min: `최솟 값을`,
+        max: `최댓 값을`,
+        limit: `진행 가능 횟수를`,
+      };
+      return `게임 시작을 위해 ${dynamicWord[state]} 입력해주세요. :`;
+    },
+    returnSettingErrorMessage(state) {
+      //세팅 에러 메시지를 return
+      const dynamicWord = {
+        min: "최솟 값이",
+        max: "최댓 값이",
+        trialLimit: "진행 가능 횟수가",
+      };
+      return `${dynamicWord[state]} 유효하지 않습니다.`;
+    },
+    returnGameQuestion(state) {
+      return `컴퓨터가 ${state.min}~${state.max} 사이의 숫자를 선택했습니다. 숫자를 맞춰보세요.`;
+    },
+    returnGameErrorMessage() {
+      return "입력하신 숫자가 올바르지 않습니다.";
+    },
+    returnResultMessage(state) {
+      if (state === gameStatus.FAIL)
+        return `${state.trialLimit}회 초과! 숫자를 맞추지 못했습니다. (정답: ${state.answer})`;
+      if (state === gameStatus.SUCCESS)
+        return `정답! 
+    축하합니다! ${state.trialCount}번 만에 숫자를 맞추셨습니다.`;
+    },
+  };
+};
+
+export function showGuideMessage(message) {
+  // 메시지를 받아서 출력해주는 함수
+  console.log(message);
 }
