@@ -7,15 +7,18 @@
   "author": "",
   "license": "MIT",
   "private": true,
-  "type": "module",
+  "type": "commonjs",
   "scripts": {
     "dev": "yarn build --watch",
-    "build": "esbuild src/index.js --bundle --outdir=dist",
+    "build": "esbuild src/index.js --bundle --outdir=dist --platform=node --format=cjs",
     "start": "node dist/index.js"
   },
   "devDependencies": {
     "esbuild": "^0.21.1",
     "eslint": "^8.57.0",
     "prettier": "^3.2.5"
+  },
+  "dependencies": {
+    "express": "^4.19.2"
   }
 }
