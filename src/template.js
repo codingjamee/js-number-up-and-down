@@ -1,10 +1,23 @@
-export function createHtmlTemplate(name) {
+
+export function createHtmlTemplate() {
   return `
-    <link rel="stylesheet" href="./index.css">
-    <div class="container">
-      <h1 class="hello">Hello, ${name}!</h1>
-      <p>Welcome to the dynamically generated HTML page.</p>
-    </div>
-    
+    <style>
+      .container {
+        background-color: lightgrey;
+        width: 600px;
+        margin: 200 auto;
+        padding: 20px;
+        border-radius: 5px;
+        text-align: center;
+      }
+    </style>
+    <script src="./app.js"></script>
+    <article class="container">
+      <h1>🔢 숫자 업 & 다운 Game</h1>
+      <h3>게임설정</h3>
+      <em>숫자 범위</em>
+      <input id="input">
+    </article>
+
   `;
 }

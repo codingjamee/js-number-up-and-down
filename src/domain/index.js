@@ -42,7 +42,9 @@ export const GameState = () => {
     },
 
     resetState() {
-      state = { ...InitialGameConfig };
+      Object.keys(state).map(key => 
+        state[key] = InitialGameConfig[key]
+      )
     },
   };
 };

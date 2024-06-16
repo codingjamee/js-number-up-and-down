@@ -12,8 +12,8 @@ app.use(express.static(path.join(__dirname)));
 
 app.get('/', (req, res) => {
   const name = "User";
-  const htmlTemplate = createHtmlTemplate(name);
-  res.send(htmlTemplate);
+  // const htmlTemplate = createHtmlTemplate(name);
+  res.send(path.join(__dirname, 'index.html'));
 });
 
 app.listen(PORT, () => {

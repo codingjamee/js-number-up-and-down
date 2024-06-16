@@ -14,6 +14,8 @@ import { addNumber, toNumber } from "../utils/util.js";
 export async function startGame() {
   //추후 여러 게임을 동시에 진행하기 위해
   const gameState1 = GameState();
+  const root = document.getElementById("root");
+  root.appendChild = `<div>game에서 보내주는 템플릿이야</div>`;
 
   const userSettingCount = () => gameState1.getState().promptCount;
   gameState1.updateState(
