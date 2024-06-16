@@ -1,4 +1,3 @@
-import readline from "readline";
 import {
   gameStatus,
   checkPromptNumber,
@@ -9,13 +8,35 @@ import {
   showGuideMessage,
   getGameInstructions,
 } from "../domain/index.js";
-import { addNumber, toNumber } from "../utils/util.js";
+import { addDom, addNumber, toNumber } from "../utils/util.js";
+
+const startTemplate = () => {
+  return `
+  <style>
+    .container {
+      background-color: lightgrey;
+      width: 600px;
+      margin: 200 auto;
+      padding: 20px;
+      border-radius: 5px;
+      text-align: center;
+    }
+  </style>
+  <article class="container">
+    <h1>🔢 숫자 업 & 다운 Game</h1>
+    <h3>게임설정</h3>
+    <em>숫자 범위</em>
+    <input id="input">
+  </article>
+`;
+};
 
 export async function startGame() {
   //추후 여러 게임을 동시에 진행하기 위해
+  console.log('start game')
   const gameState1 = GameState();
   const root = document.getElementById("root");
-  root.appendChild = `<div>game에서 보내주는 템플릿이야</div>`;
+  addDom().addChild(root, startTemplate());
 
   const userSettingCount = () => gameState1.getState().promptCount;
   gameState1.updateState(
@@ -156,24 +177,24 @@ export async function endGame(playState, result) {
   }
 }
 
-function readLineAsync(query) {
-  return new Promise((resolve, reject) => {
-    if (arguments.length !== 1) {
-      reject(new Error("arguments must be 1"));
-    }
+// function readLineAsync(query) {
+//   return new Promise((resolve, reject) => {
+//     if (arguments.length !== 1) {
+//       reject(new Error("arguments must be 1"));
+//     }
 
-    if (typeof query !== "string") {
-      reject(new Error("query must be string"));
-    }
+//     if (typeof query !== "string") {
+//       reject(new Error("query must be string"));
+//     }
 
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
+//     const rl = readline.createInterface({
+//       input: process.stdin,
+//       output: process.stdout,
+//     });
 
-    rl.question(query, (input) => {
-      rl.close();
-      resolve(input);
-    });
-  });
-}
+//     rl.question(query, (input) => {
+//       rl.close();
+//       resolve(input);
+//     });
+//   });
+// }

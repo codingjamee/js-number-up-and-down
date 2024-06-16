@@ -13,3 +13,12 @@ export function addNumber(number) {
 export function toNumber(number) {
   return parseFloat(number);
 }
+
+export function addDom () {
+  return {
+    addChild (target, children) {
+      target.appendChild = children
+    },
+
+  }
+}
