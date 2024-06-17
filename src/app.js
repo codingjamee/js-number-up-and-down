@@ -5,4 +5,5 @@ const app = () => {
   startGame();
 }
 
+app();
 export default app
