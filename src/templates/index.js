@@ -16,12 +16,12 @@ export function playTemplate() {
   return `
 <div>
   <label>숫자 범위</label>
-  <input id="minNumber" placeholder="최소" name="min"> ~ 
-  <input id="maxNumber" placeholder="최대" name="max">
+  <input id="min" placeholder="최소" name="min"> ~ 
+  <input id="max" placeholder="최대" name="max">
 </div>
 <div>
   <label>진행 가능 횟수</label>
-  <input id="trialLimit" name="trial"/>
+  <input id="limit" name="trial"/>
 </div>
   `;
 }
