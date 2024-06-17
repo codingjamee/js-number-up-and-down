@@ -65,7 +65,6 @@ export function isNumber(answer) {
   return !isNaN(answer);
 }
 
-
 export function checkUpDown(answer, input) {
   return answer > input;
 }
@@ -88,19 +87,24 @@ export function render(template) {
   mutateDOM().addChild(root, template);
 }
 
-export function addChildrenById (id, element) {
+export function addChildrenById(id, element) {
   const elementId = document.getElementById(id);
-  mutateDOM().addChild(elementId, element)
+  mutateDOM().addChild(elementId, element);
 }
 
-export function removeChildrenById (id){
+export function removeChildrenById(id) {
   const elementId = document.getElementById(id);
-  mutateDOM().removeChild(elementId)
+  mutateDOM().removeChild(elementId);
 }
 
 export function changeTextById(id, text) {
   const elementId = document.getElementById(id);
   elementId.innerText = text;
+}
+
+export function mutateDisabledBtn(id, boolean) {
+  const buttonId = document.getElementById(id);
+  buttonId.disabled = boolean;
 }
 
 export const getGameInstructions = () => {
