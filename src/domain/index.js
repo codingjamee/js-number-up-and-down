@@ -60,10 +60,11 @@ export function parseBoundary(boundary) {
   return [minNumber, maxNumber];
 }
 
-export function checkPromptNumber(answer) {
+export function isNumber(answer) {
   //answer가 숫자인지 check함
   return !isNaN(answer);
 }
+
 
 export function checkUpDown(answer, input) {
   return answer > input;
@@ -84,7 +85,17 @@ export function addListenerById(id, eventType, callback) {
 export function render(template) {
   const root = document.getElementById("root");
   console.log("add Child");
-  addDom().addChild(root, template);
+  mutateDOM().addChild(root, template);
+}
+
+export function addChildrenById (id, element) {
+  const elementId = document.getElementById(id);
+  mutateDOM().addChild(elementId, element)
+}
+
+export function removeChildrenById (id){
+  const elementId = document.getElementById(id);
+  mutateDOM().removeChild(elementId)
 }
 
 export function changeTextById(id, text) {

@@ -14,11 +14,15 @@ export function toNumber(number) {
   return parseFloat(number);
 }
 
-export function addDom () {
+export function mutateDOM() {
   return {
-    addChild (target, children) {
-      target.appendChild = children
+    addChild(target, children) {
+      target.appendChild = children;
     },
-
-  }
+    removeChild(target, children) {
+      if (target.parentNode) {
+        target.parentNode.removeChild(children);
+      }
+    },
+  };
 }
