@@ -42,9 +42,7 @@ export const GameState = () => {
     },
 
     resetState() {
-      Object.keys(state).map(key => 
-        state[key] = InitialGameConfig[key]
-      )
+      Object.keys(state).map((key) => (state[key] = InitialGameConfig[key]));
     },
   };
 };
@@ -76,6 +74,22 @@ export async function runAsyncLoopWhileCondition(loopFn, condition) {
   while (condition()) {
     await loopFn();
   }
+}
+
+export function addListenerById(id, eventType, callback) {
+  const elementId = document.getElementById(id);
+  elementId.addEventListener(eventType, callback);
+}
+
+export function render(template) {
+  const root = document.getElementById("root");
+  console.log("add Child");
+  addDom().addChild(root, template);
+}
+
+export function changeTextById(id, text) {
+  const elementId = document.getElementById(id);
+  elementId.innerText = text;
 }
 
 export const getGameInstructions = () => {
