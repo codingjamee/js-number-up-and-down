@@ -1,22 +1,15 @@
 import {
   gameStatus,
-  checkPromptNumber,
   createRandomNumber,
   checkUpDown,
-  runAsyncLoopWhileCondition,
   GameState,
   getGameInstructions,
   addListenerById,
-  render,
   removeChildrenById,
   mutateDisabledBtn,
+  addChildrenById,
 } from "../domain/index.js";
-import {
-  startTemplate,
-  playTemplate,
-  containerTemplate,
-} from "../templates/index.js";
-import { toNumber } from "../utils/util.js";
+import { addNumber, toNumber } from "../utils/util.js";
 
 export async function startGame() {
   console.log("start game");
@@ -25,27 +18,20 @@ export async function startGame() {
 
   gameState1.updateState("status", gameStatus.READY);
 
-  updateView();
+  updateView({ state: gameState1.getState().status, btnText: "시작하기" });
 
   addSettingListener();
   computerSetting();
 
-  const targetStatus = gameState1.getState().PLAYING;
-  gameState1.updateState("status", targetStatus);
-  return playGame();
-
-  function updateView() {
-    const view = composeDetailView(gameState1.getState().status);
-    render(containerTemplate(view));
-
-    changeTextById(submitBtn, "시작하기");
-  }
-
   function addSettingListener() {
-    gameState1.updateState("status", targetStatus);
-
     addValidationListener();
     addSubmitListener();
+
+    //이 로직을 어디에 두어야 할지 생각해야함
+    //listener 작동 후 setting후에 설정 되어야함
+    // const targetStatus = gameState1.getState().PLAYING;
+    // gameState1.updateState("status", targetStatus);
+    // return playGame(gameState1);
   }
 
   function addValidationListener() {
@@ -53,22 +39,21 @@ export async function startGame() {
       addListenerById(inputId, "blur", inputIsNotValid);
       addListenerById(inputId, "input", inputIsValid);
     });
-  }
-
-  function inputIsNotValid(event) {
-    if (!isNumber(event.target.value)) {
-      addChildrenById(
-        inputId,
-        getGameInstructions().returnSettingErrorMessage(inputId)
-      );
-      mutateDisabledBtn("submitBtn", true);
+    function inputIsNotValid(event) {
+      if (!isNumber(event.target.value)) {
+        addChildrenById(
+          inputId,
+          getGameInstructions().returnSettingErrorMessage(inputId)
+        );
+        mutateDisabledBtn("submitBtn", true);
+      }
     }
-  }
 
-  function inputIsValid(event) {
-    if (isNumber(event.target.value)) {
-      removeChildrenById(inputId);
-      mutateDisabledBtn("submitBtn", false);
+    function inputIsValid(event) {
+      if (isNumber(event.target.value)) {
+        removeChildrenById(inputId);
+        mutateDisabledBtn("submitBtn", false);
+      }
     }
   }
 
@@ -88,64 +73,89 @@ export async function startGame() {
 }
 
 export async function playGame(state) {
-  const playState = { ...state };
+  const playGameState1 = { ...state };
 
-  const whileCondition = () =>
-    playState.userTrials.length <= playState.trialLimit;
+  //template제공
+  updateView({
+    state: playGameState1.getState().status,
+    btnText: "메인화면으로 이동",
+  });
 
-  const userAnswer = await runAsyncLoopWhileCondition(
-    continueGame,
-    whileCondition()
-  );
+  addPlayingListener();
 
-  endGame(playState, userAnswer);
+  function addPlayingListener() {
+    addValidationListener({ inputId: "userTrial" });
+    addSubmitListener();
 
-  //계속 게임이 진행됨
-  async function continueGame() {
-    //validCount인지 확인
-    const isValidCount = checkValidCount(state);
-    if (!isValidCount) return changeState(state);
-    //loop를 빠져나옴
+    function addValidationListener({ inputId }) {
+      //validate 이벤트 리스너
+      addListenerById(inputId, "blur", inputIsNotValid);
+      addListenerById(inputId, "input", inputIsValid);
+      //이부분은 dom이 재렌더링이 너무많이 일어날 것 같았지만
+      //유효여부 변경될 때만 버튼 변경되어 렌더링 될 것같다
 
-    //user 입력 받음
-    const userInput = await promptUser();
+      function inputIsNotValid(event) {
+        //모듈화 할 수 있지 않을까? 그런데 재사용성이 있는 대신 의존도가 높아질 수 있다.
+        if (!isNumber(event.target.value)) {
+          addChildrenById(
+            inputId,
+            getGameInstructions().returnGameErrorMessage(inputId)
+          );
+          mutateDisabledBtn("submitBtn", true);
+        }
+      }
 
-    //validation 확인
-    const isValid = checkPromptNumber(userInput);
-    if (!isValid) return console.log(returnGameErrorMessage());
+      function inputIsValid(event) {
+        if (isNumber(event.target.value)) {
+          removeChildrenById(inputId);
+          mutateDisabledBtn("submitBtn", false);
+        }
+      }
+    }
 
-    //answer인지 확인
-    const isAnswer = checkIsAnswer(userInput, playState);
-    if (isAnswer) return true;
+    function addSubmitListener() {
+      //submit시 발생하는 이벤트 리스너
+      addListenerById("submitBtn", "click", submitListener);
 
-    onValidGame(userInput);
-  }
+      function submitListener() {
+        const userTry = document.getElementById("tryBtn");
+        if (checkIsAnswer(userTry)) {
+          playGameState1.updateState("status", gameStatus.SUCCESS);
+          return endGame(playGameState1);
+        }
 
-  function checkValidCount() {
-    return playState.trialLimit >= playState.userTrials.length;
-  }
+        onValidGame(userTry);
 
-  function onValidGame(userInput) {
-    const isUp = checkUpDown(playState.answer, userInput);
-    console.log(`${isUp ? "up" : "down"}`);
+        const isValidGame = checkValidCount();
+        if (!isValidGame) {
+          playGameState1.updateState("status", gameStatus.FAIL);
+          return endGame(playGameState1);
+        }
 
-    addUserTrials(userInput);
-    console.log(user.userTrials);
+        function checkValidCount() {
+          return playGameState1.trialLimit >= playGameState1.userTrials.length;
+        }
 
-    addCount();
-  }
+        function onValidGame(userInput) {
+          const isUp = checkUpDown(playGameState1.answer, userInput);
+          if (isUp) return addChildrenById("up"); //문구 설정 필요
+          addChildrenById("down");
 
-  function addUserTrials(userInput) {
-    playState.userTrials.push(userInput);
-  }
+          addChildrenById(userInput); //usertry 추가
+          console.log(user.userTrials);
 
-  async function promptUser() {
-    //user의 응답을 받음
-    return await alert(returnGameQuestion(playState.status));
-  }
+          playGameState1.updateState(
+            "userTrialCount",
+            addNumber(playGameState1.getState().userTrialCount)
+          );
+        }
+        
+        function checkIsAnswer(userTry) {
+          return userTry === playGameState1.answer;
+        }
+      }
 
-  function checkIsAnswer(userTry) {
-    return userTry === playState.answer;
+    }
   }
 }
 
@@ -196,7 +206,3 @@ export async function endGame(playState, result) {
 //     });
 //   });
 // }
-
-function composeDetailView(state) {
-  return state === "ready" ? startTemplate() : playTemplate();
-}
