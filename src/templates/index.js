@@ -7,22 +7,30 @@ export function startTemplate() {
   </div>
   <div>
     <label>진행 가능 횟수</label>
-    <input id="trialLimit" name="trial"/>
+    <input id="trialLimit" name="trialLimit"/>
   </div>
   `;
 }
 
 export function playTemplate() {
   return `
-<div>
-  <label>숫자 범위</label>
-  <input id="min" placeholder="최소" name="min"> ~ 
-  <input id="max" placeholder="최대" name="max">
-</div>
-<div>
-  <label>진행 가능 횟수</label>
-  <input id="limit" name="trial"/>
-</div>
+  <div>
+    <label>숫자 입력</label>
+    <input id="userTrial" name="userTrial"/>
+    <button id="tryBtn">확인</button>
+  </div>
+  <div>
+    <h1>진행 화면</h1>
+    <div id="instructionView"></div>
+  </div>
+  `;
+}
+
+export function endTemplate() {
+  return `
+  <div>
+    게임이 종료되었습니다. 다시 시작하시겠습니까?
+  </div>
   `;
 }
 
