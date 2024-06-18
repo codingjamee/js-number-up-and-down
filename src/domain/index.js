@@ -1,4 +1,9 @@
-import { copyObject } from "../utils/util.js";
+import {
+  endTemplate,
+  playTemplate,
+  startTemplate,
+} from "../templates/index.js";
+import { copyObject, mutateDOM } from "../utils/util.js";
 
 export const gameStatus = {
   READY: "READY",
@@ -71,14 +76,29 @@ export function checkUpDown(answer, input) {
 
 export async function runAsyncLoopWhileCondition(loopFn, condition) {
   //특정 조건 내에 함수 반복
-  while (condition()) {
-    await loopFn();
-  }
+  if (condition)
+    while (condition()) {
+      await loopFn();
+    }
+}
+
+export function updateView({ state, btnText }) {
+  const view = composeDetailView(state);
+  render(containerTemplate(view));
+
+  if (btnText) changeTextById("submitBtn", btnText);
+}
+
+function composeDetailView(state) {
+  if (state === "ready") return startTemplate();
+  if (state === "play") return playTemplate();
+  if (state === "end") return endTemplate();
 }
 
 export function addListenerById(id, eventType, callback) {
+  //이부분도 잘한 모듈화일까? 의존성이 높다.
   const elementId = document.getElementById(id);
-  elementId.addEventListener(eventType, callback);
+  if (elementId) elementId.addEventListener(eventType, callback);
 }
 
 export function render(template) {
@@ -99,7 +119,7 @@ export function removeChildrenById(id) {
 
 export function changeTextById(id, text) {
   const elementId = document.getElementById(id);
-  elementId.innerText = text;
+  if (elementId) elementId.innerText = text;
 }
 
 export function mutateDisabledBtn(id, boolean) {
