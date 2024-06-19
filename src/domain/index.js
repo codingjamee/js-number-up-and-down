@@ -162,8 +162,22 @@ export const getGameInstructions = () => {
         return `정답! 
     축하합니다! ${state.trialCount}번 만에 숫자를 맞추셨습니다.`;
     },
+    returnNumberStatus(isUp) {
+      return isUp ? "업" : "다운";
+    },
+    getMessageTag(tag) {
+      if (tag === "computer") return "[컴퓨터] ";
+      if (tag === "user") return "[유저] ";
+    },
+    returnRemainTrial(count) {
+      return `${count}회 남으셨습니다. 숫자를 맞춰보세요.`;
+    },
   };
 };
+
+export function getDetailIntsructionMessage(...messages) {
+  return messages.reduce((result, message) => result + message, "");
+}
 
 export function showGuideMessage(message) {
   // 메시지를 받아서 출력해주는 함수
