@@ -34,6 +34,10 @@ export function endTemplate() {
   `;
 }
 
+export function getDivTemplate(element) {
+  return `<div>${element}</div>`;
+}
+
 export function containerTemplate(template) {
   return `
   <style>
