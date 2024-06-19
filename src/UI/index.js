@@ -123,15 +123,6 @@ export async function playGame(state) {
         const userTry = document.getElementById("tryBtn");
         if (checkIsAnswer(userTry)) {
           playGameState1.updateState("status", gameStatus.SUCCESS);
-
-          const successMessage = getDetailIntsructionMessage(
-            getGameInstructions().getMessageTag("computer"),
-            getGameInstructions().returnResultMessage(
-              playGameState1.userTrialCount
-            )
-          );
-          addChildrenById("instructionView", successMessage);
-
           return endGame(playGameState1);
         }
 
@@ -186,46 +177,25 @@ export async function playGame(state) {
   }
 }
 
-export async function endGame(playState, result) {
+export async function endGame(playState, success) {
   const endState = { ...playState };
 
-  if (result) onSuccessGame();
-  if (!result) onFailGame();
-
-  console.log(returnResultMessage(endState.status));
-
-  const answer = await askRestart();
-  if (answer === "yes") return playGame();
-
-  return console.log("게임을 종료합니다.");
+  if (success) onSuccessGame();
+  if (!success) onFailGame();
 
   function onFailGame() {
-    changeState(endState.status, gameStatus.FAIL);
+    const failMessage = getDetailIntsructionMessage(
+      getGameInstructions().getMessageTag("computer"),
+      getGameInstructions().returnResultMessage(endState.getState())
+    );
+    addChildrenById("instructionView", failMessage);
   }
 
   function onSuccessGame() {
-    changeState(endState.status, gameStatus.SUCCESS);
+    const successMessage = getDetailIntsructionMessage(
+      getGameInstructions().getMessageTag("computer"),
+      getGameInstructions().returnResultMessage(endState.getState())
+    );
+    addChildrenById("instructionView", successMessage);
   }
 }
-
-// function alert(query) {
-//   return new Promise((resolve, reject) => {
-//     if (arguments.length !== 1) {
-//       reject(new Error("arguments must be 1"));
-//     }
-
-//     if (typeof query !== "string") {
-//       reject(new Error("query must be string"));
-//     }
-
-//     const rl = readline.createInterface({
-//       input: process.stdin,
-//       output: process.stdout,
-//     });
-
-//     rl.question(query, (input) => {
-//       rl.close();
-//       resolve(input);
-//     });
-//   });
-// }
