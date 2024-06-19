@@ -9,6 +9,7 @@ import {
   mutateDisabledBtn,
   addChildrenById,
   getDetailIntsructionMessage,
+  updateView,
 } from "../domain/index.js";
 import { getDivTemplate } from "../templates/index.js";
 import { addNumber, toNumber } from "../utils/util.js";
@@ -20,7 +21,10 @@ export async function startGame() {
 
   gameState1.updateState("status", gameStatus.READY);
 
-  updateView({ state: gameState1.getState().status, btnText: "시작하기" });
+  updateView({
+    state: gameState1.getState().status,
+    btnText: "시작하기",
+  });
 
   addSettingListener();
 

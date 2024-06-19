@@ -1,4 +1,5 @@
 import {
+  containerTemplate,
   endTemplate,
   playTemplate,
   startTemplate,
@@ -85,14 +86,16 @@ export async function runAsyncLoopWhileCondition(loopFn, condition) {
 export function updateView({ state, btnText }) {
   const view = composeDetailView(state);
   render(containerTemplate(view));
+  console.log(containerTemplate(view))
 
   if (btnText) changeTextById("submitBtn", btnText);
 }
 
 function composeDetailView(state) {
-  if (state === "ready") return startTemplate();
-  if (state === "play") return playTemplate();
-  if (state === "end") return endTemplate();
+  console.log("domain 95", {state})
+  if (state === "READY") return startTemplate();
+  if (state === "PLAY") return playTemplate();
+  if (state === "END") return endTemplate();
 }
 
 export function addListenerById(id, eventType, callback) {
@@ -156,9 +159,9 @@ export const getGameInstructions = () => {
       return "입력하신 숫자가 올바르지 않습니다.";
     },
     returnResultMessage(state) {
-      if (state === gameStatus.FAIL)
+      if (state.status === gameStatus.FAIL)
         return `${state.trialLimit}회 초과! 숫자를 맞추지 못했습니다. (정답: ${state.answer})`;
-      if (state === gameStatus.SUCCESS)
+      if (state.status === gameStatus.SUCCESS)
         return `정답! 
     축하합니다! ${state.trialCount}번 만에 숫자를 맞추셨습니다.`;
     },

@@ -17,7 +17,7 @@ export function toNumber(number) {
 export function mutateDOM() {
   return {
     addChild(target, children) {
-      target.appendChild = children;
+      target.innerHTML = children;
     },
     removeChild(target, children) {
       if (target.parentNode) {

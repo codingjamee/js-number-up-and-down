@@ -41,7 +41,7 @@ export function getDivTemplate(element) {
 export function containerTemplate(template) {
   return `
   <style>
-   
+  
   </style>
   <article class="container">
     <h1>🔢 숫자 업 & 다운 Game</h1>
