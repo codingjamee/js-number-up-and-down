@@ -1,177 +1,205 @@
-import readline from "readline";
 import {
   gameStatus,
-  checkPromptNumber,
   createRandomNumber,
   checkUpDown,
-  runAsyncLoopWhileCondition,
   GameState,
-  showGuideMessage,
   getGameInstructions,
+  addListenerById,
+  removeChildrenById,
+  mutateDisabledBtn,
+  addChildrenById,
+  getDetailIntsructionMessage,
+  updateView,
 } from "../domain/index.js";
+import { getDivTemplate } from "../templates/index.js";
 import { addNumber, toNumber } from "../utils/util.js";
 
 export async function startGame() {
-  //추후 여러 게임을 동시에 진행하기 위해
+  console.log("start game");
   const gameState1 = GameState();
+  const settingIdArray = ["min", "max", "limit"];
 
-  const userSettingCount = () => gameState1.getState().promptCount;
-  gameState1.updateState(
-    "status",
-    gameStatus.USERSETTING_COUNT[userSettingCount()]
-  );
+  gameState1.updateState("status", gameStatus.READY);
 
-  await userSetting();
-  computerSetting();
+  updateView({
+    state: gameState1.getState().status,
+    btnText: "시작하기",
+  });
 
-  const targetStatus = gameState1.getState().PLAYING;
-  gameState1.updateState("status", targetStatus);
+  addSettingListener();
 
-  return playGame();
+  function addSettingListener() {
+    addValidationListener();
+    addSubmitListener();
 
-  async function userSetting() {
-    const totalUserSettingCount = gameState1.getState().totalSettingCount;
-    const whileCondition = () => userSettingCount() < totalUserSettingCount;
-    await runAsyncLoopWhileCondition(promptUserSetting, whileCondition);
-  }
+    function addValidationListener() {
+      settingIdArray.map((inputId) => {
+        addListenerById(inputId, "blur", inputIsNotValid);
+        addListenerById(inputId, "input", inputIsValid);
+      });
+      function inputIsNotValid(event) {
+        if (!isNumber(event.target.value)) {
+          addChildrenById(
+            inputId,
+            getGameInstructions().returnSettingErrorMessage(inputId)
+          );
+          mutateDisabledBtn("submitBtn", true);
+        }
+      }
 
-  function computerSetting() {
-    const { min, max } = gameState1.getState();
-    const randomNumber = createRandomNumber(min, max);
-    gameState1.updateState("answer", randomNumber);
-  }
-
-  async function promptUserSetting() {
-    //count만큼 user setting받기
-    const userAnswer = await readLineAsync(
-      getGameInstructions().returnSettingQuestion(gameState1.getState().status)
-    );
-
-    const isValid = checkPromptNumber(userAnswer);
-    if (!isValid) {
-      gameState1.updateState("status", gameStatus.NOTVALID_ANSWER);
-      const message = getGameInstructions().returnSettingErrorMessage(state);
-      return showGuideMessage(message);
+      function inputIsValid(event) {
+        if (isNumber(event.target.value)) {
+          removeChildrenById(inputId);
+          mutateDisabledBtn("submitBtn", false);
+        }
+      }
     }
 
-    const count = gameState1.getState().promptCount;
-    const targetStatus = gameStatus.USERSETTING_COUNT[count];
+    function addSubmitListener() {
+      //submit할 때 input의 setting을 모두 설정
+      settingIdArray.map((inputId) => {
+        const input = document.getElementById(inputId);
+        gameState1.updateState(inputId, toNumber(input));
+      });
+      computerSetting();
 
-    gameState1.updateState(targetStatus, toNumber(userAnswer));
-    gameState1.updateState("promptCount", addNumber(count));
-    gameState1.updateState(
-      "status",
-      gameStatus.USERSETTING_COUNT[addNumber(count)]
-    );
+      function computerSetting() {
+        const { min, max } = gameState1.getState();
+        const randomNumber = createRandomNumber(min, max);
+
+        gameState1.updateState("answer", randomNumber);
+
+        const targetStatus = gameState1.getState().PLAYING;
+        gameState1.updateState("status", targetStatus);
+        return playGame(gameState1);
+      }
+    }
   }
 }
 
 export async function playGame(state) {
-  const playState = { ...state };
+  const playGameState1 = { ...state };
 
-  const whileCondition = () =>
-    playState.userTrials.length <= playState.trialLimit;
+  //template제공
+  updateView({
+    state: playGameState1.getState().status,
+    btnText: "메인화면으로 이동",
+  });
 
-  const userAnswer = await runAsyncLoopWhileCondition(
-    continueGame,
-    whileCondition()
-  );
+  addPlayingListener();
+  //안내문구
 
-  endGame(playState, userAnswer);
+  function addPlayingListener() {
+    addValidationListener({ inputId: "userTrial" });
+    addSubmitListener();
 
-  //계속 게임이 진행됨
-  async function continueGame() {
-    //validCount인지 확인
-    const isValidCount = checkValidCount(state);
-    if (!isValidCount) return changeState(state);
-    //loop를 빠져나옴
+    function addValidationListener({ inputId }) {
+      //validate 이벤트 리스너
+      addListenerById(inputId, "blur", inputIsNotValid);
+      addListenerById(inputId, "input", inputIsValid);
+      //이부분은 dom이 재렌더링이 너무많이 일어날 것 같았지만
+      //유효여부 변경될 때만 버튼 변경되어 렌더링 될 것같다
 
-    //user 입력 받음
-    const userInput = await promptUser();
+      function inputIsNotValid(event) {
+        //모듈화 할 수 있지 않을까? 그런데 재사용성이 있는 대신 의존도가 높아질 수 있다.
+        if (!isNumber(event.target.value)) {
+          addChildrenById(
+            inputId,
+            getGameInstructions().returnGameErrorMessage(inputId)
+          );
+          mutateDisabledBtn("submitBtn", true);
+        }
+      }
 
-    //validation 확인
-    const isValid = checkPromptNumber(userInput);
-    if (!isValid) return console.log(returnGameErrorMessage());
+      function inputIsValid(event) {
+        if (isNumber(event.target.value)) {
+          removeChildrenById(inputId);
+          mutateDisabledBtn("submitBtn", false);
+        }
+      }
+    }
 
-    //answer인지 확인
-    const isAnswer = checkIsAnswer(userInput, playState);
-    if (isAnswer) return true;
+    function addSubmitListener() {
+      //submit시 발생하는 이벤트 리스너
+      addListenerById("submitBtn", "click", submitListener);
 
-    onValidGame(userInput);
-  }
+      function submitListener() {
+        const userTry = document.getElementById("tryBtn");
+        if (checkIsAnswer(userTry)) {
+          playGameState1.updateState("status", gameStatus.SUCCESS);
+          return endGame(playGameState1);
+        }
 
-  function checkValidCount() {
-    return playState.trialLimit >= playState.userTrials.length;
-  }
+        onValidGame(userTry);
 
-  function onValidGame(userInput) {
-    const isUp = checkUpDown(playState.answer, userInput);
-    console.log(`${isUp ? "up" : "down"}`);
+        const isValidGame = checkValidCount();
+        if (!isValidGame) {
+          playGameState1.updateState("status", gameStatus.FAIL);
+          return endGame(playGameState1);
+        }
 
-    addUserTrials(userInput);
-    console.log(user.userTrials);
+        function checkValidCount() {
+          return playGameState1.trialLimit >= playGameState1.userTrials.length;
+        }
 
-    addCount();
-  }
+        function onValidGame(userInput) {
+          const isUp = checkUpDown(playGameState1.answer, userInput);
+          const trialCount = playGameState1.getState().userTrialCount;
 
-  function addUserTrials(userInput) {
-    playState.userTrials.push(userInput);
-  }
+          updateValidGameMessage();
 
-  async function promptUser() {
-    //user의 응답을 받음
-    return await readLineAsync(returnGameQuestion(playState.status));
-  }
+          playGameState1.updateState("userTrialCount", addNumber(trialCount));
 
-  function checkIsAnswer(userTry) {
-    return userTry === playState.answer;
+          function updateValidGameMessage() {
+            const userTryMessage = getDetailIntsructionMessage(
+              getMessageTag("user"),
+              userInput
+            );
+            const upAndDownMessage = getDetailIntsructionMessage(
+              getMessageTag("computer"),
+              getGameInstructions().returnNumberStatus(isUp)
+            );
+            const remainTrialMessage = getDetailIntsructionMessage(
+              getMessage("computer"),
+              getGameInstructions().returnRemainTrial(trialCount)
+            );
+
+            const userDiv = getDivTemplate(userTryMessage);
+            const upAndDownDiv = getDivTemplate(upAndDownMessage);
+            const remainDiv = getDivTemplate(remainTrialMessage);
+            const gameMessages = userDiv + upAndDownDiv + remainDiv;
+
+            addChildrenById("instructionView", gameMessages);
+          }
+        }
+
+        function checkIsAnswer(userTry) {
+          return userTry === playGameState1.answer;
+        }
+      }
+    }
   }
 }
 
-export async function endGame(playState, result) {
+export async function endGame(playState, success) {
   const endState = { ...playState };
 
-  if (result) onSuccessGame();
-  if (!result) onFailGame();
-
-  console.log(returnResultMessage(endState.status));
-
-  const answer = await askRestart();
-  if (answer === "yes") return playGame();
-
-  return console.log("게임을 종료합니다.");
+  if (success) onSuccessGame();
+  if (!success) onFailGame();
 
   function onFailGame() {
-    changeState(endState.status, gameStatus.FAIL);
+    const failMessage = getDetailIntsructionMessage(
+      getGameInstructions().getMessageTag("computer"),
+      getGameInstructions().returnResultMessage(endState.getState())
+    );
+    addChildrenById("instructionView", failMessage);
   }
 
   function onSuccessGame() {
-    changeState(endState.status, gameStatus.SUCCESS);
+    const successMessage = getDetailIntsructionMessage(
+      getGameInstructions().getMessageTag("computer"),
+      getGameInstructions().returnResultMessage(endState.getState())
+    );
+    addChildrenById("instructionView", successMessage);
   }
-
-  async function askRestart() {
-    return await readLineAsync("다시 시작하시겠습니까? (yes / no) : ");
-  }
-}
-
-function readLineAsync(query) {
-  return new Promise((resolve, reject) => {
-    if (arguments.length !== 1) {
-      reject(new Error("arguments must be 1"));
-    }
-
-    if (typeof query !== "string") {
-      reject(new Error("query must be string"));
-    }
-
-    const rl = readline.createInterface({
-      input: process.stdin,
-      output: process.stdout,
-    });
-
-    rl.question(query, (input) => {
-      rl.close();
-      resolve(input);
-    });
-  });
 }

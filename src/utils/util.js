@@ -13,3 +13,16 @@ export function addNumber(number) {
 export function toNumber(number) {
   return parseFloat(number);
 }
+
+export function mutateDOM() {
+  return {
+    addChild(target, children) {
+      target.innerHTML = children;
+    },
+    removeChild(target, children) {
+      if (target.parentNode) {
+        target.parentNode.removeChild(children);
+      }
+    },
+  };
+}

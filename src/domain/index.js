@@ -1,4 +1,10 @@
-import { copyObject } from "../utils/util.js";
+import {
+  containerTemplate,
+  endTemplate,
+  playTemplate,
+  startTemplate,
+} from "../templates/index.js";
+import { copyObject, mutateDOM } from "../utils/util.js";
 
 export const gameStatus = {
   READY: "READY",
@@ -42,7 +48,7 @@ export const GameState = () => {
     },
 
     resetState() {
-      state = { ...InitialGameConfig };
+      Object.keys(state).map((key) => (state[key] = InitialGameConfig[key]));
     },
   };
 };
@@ -60,7 +66,7 @@ export function parseBoundary(boundary) {
   return [minNumber, maxNumber];
 }
 
-export function checkPromptNumber(answer) {
+export function isNumber(answer) {
   //answer가 숫자인지 check함
   return !isNaN(answer);
 }
@@ -71,9 +77,57 @@ export function checkUpDown(answer, input) {
 
 export async function runAsyncLoopWhileCondition(loopFn, condition) {
   //특정 조건 내에 함수 반복
-  while (condition()) {
-    await loopFn();
-  }
+  if (condition)
+    while (condition()) {
+      await loopFn();
+    }
+}
+
+export function updateView({ state, btnText }) {
+  const view = composeDetailView(state);
+  render(containerTemplate(view));
+  console.log(containerTemplate(view))
+
+  if (btnText) changeTextById("submitBtn", btnText);
+}
+
+function composeDetailView(state) {
+  console.log("domain 95", {state})
+  if (state === "READY") return startTemplate();
+  if (state === "PLAY") return playTemplate();
+  if (state === "END") return endTemplate();
+}
+
+export function addListenerById(id, eventType, callback) {
+  //이부분도 잘한 모듈화일까? 의존성이 높다.
+  const elementId = document.getElementById(id);
+  if (elementId) elementId.addEventListener(eventType, callback);
+}
+
+export function render(template) {
+  const root = document.getElementById("root");
+  console.log("add Child");
+  mutateDOM().addChild(root, template);
+}
+
+export function addChildrenById(id, element) {
+  const elementId = document.getElementById(id);
+  mutateDOM().addChild(elementId, element);
+}
+
+export function removeChildrenById(id) {
+  const elementId = document.getElementById(id);
+  mutateDOM().removeChild(elementId);
+}
+
+export function changeTextById(id, text) {
+  const elementId = document.getElementById(id);
+  if (elementId) elementId.innerText = text;
+}
+
+export function mutateDisabledBtn(id, boolean) {
+  const buttonId = document.getElementById(id);
+  buttonId.disabled = boolean;
 }
 
 export const getGameInstructions = () => {
@@ -105,14 +159,28 @@ export const getGameInstructions = () => {
       return "입력하신 숫자가 올바르지 않습니다.";
     },
     returnResultMessage(state) {
-      if (state === gameStatus.FAIL)
+      if (state.status === gameStatus.FAIL)
         return `${state.trialLimit}회 초과! 숫자를 맞추지 못했습니다. (정답: ${state.answer})`;
-      if (state === gameStatus.SUCCESS)
+      if (state.status === gameStatus.SUCCESS)
         return `정답! 
     축하합니다! ${state.trialCount}번 만에 숫자를 맞추셨습니다.`;
     },
+    returnNumberStatus(isUp) {
+      return isUp ? "업" : "다운";
+    },
+    getMessageTag(tag) {
+      if (tag === "computer") return "[컴퓨터] ";
+      if (tag === "user") return "[유저] ";
+    },
+    returnRemainTrial(count) {
+      return `${count}회 남으셨습니다. 숫자를 맞춰보세요.`;
+    },
   };
 };
+
+export function getDetailIntsructionMessage(...messages) {
+  return messages.reduce((result, message) => result + message, "");
+}
 
 export function showGuideMessage(message) {
   // 메시지를 받아서 출력해주는 함수
